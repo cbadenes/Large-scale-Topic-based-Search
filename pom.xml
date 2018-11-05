@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>oeg</groupId>
+  <artifactId>large-scale-topic-based-search</artifactId>
+  <version>0.1</version>
+  <packaging>jar</packaging>
+  <name>Large-scale Topic-based Search Engine</name>
+  <description>Algorithm to efficiently explore large-scale corpus based on Probabilistic Topic Models</description>
+  <url>https://github.com/cbadenes/Large-scale-Topic-based-Search</url>
+  <inceptionYear>2018</inceptionYear>
+
+  <prerequisites>
+    <maven>3.2.5</maven>
+  </prerequisites>
+
+  <properties>
+	  <!-- Project Details -->
+	  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	  <project.java.version>1.8</project.java.version>
+	  <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+	  <!-- Maven Plugins -->
+	  <maven.appassembler.plugin.version>1.9</maven.appassembler.plugin.version>
+	  <maven.assembly.plugin.version>2.5.5</maven.assembly.plugin.version>
+	  <maven.compiler.plugin.version>3.3</maven.compiler.plugin.version>
+	  <maven.jar.plugin.version>2.6</maven.jar.plugin.version>
+	  <maven.site.plugin.version>0.10</maven.site.plugin.version>
+	  <maven.scala.version>2.15.2</maven.scala.version>
+	  <maven.surefire.plugin.version>2.11</maven.surefire.plugin.version>
+	  <maven.war.plugin.version>2.6</maven.war.plugin.version>
+	  <maven.resources.plugin.version>2.7</maven.resources.plugin.version>
+	  <surefire.junit.version>2.12</surefire.junit.version>
+
+	  <!-- Project Dependencies -->
+	  <commons-text.version>1.4</commons-text.version>
+	  <commons-beanutils.version>1.9.3</commons-beanutils.version>
+	  <commons-io.version>2.6</commons-io.version>
+	  <corenlp.version>3.9.1</corenlp.version>
+	  <guava.version>25.1-jre</guava.version>
+	  <jackson.version>2.9.4</jackson.version>
+	  <jsoup.version>1.11.3</jsoup.version>
+	  <junit.version>4.12</junit.version>
+	  <language-detector.version>0.6</language-detector.version>
+	  <librairy.version>[1.0,)</librairy.version>
+	  <logback.version>1.1.3</logback.version>
+	  <mallet.version>2.0.8.1</mallet.version>
+	  <oai.version>1.1.0</oai.version>
+	  <commons-lang3.version>3.5</commons-lang3.version>
+	  <coreNlpExtensions.version>1.0</coreNlpExtensions.version>
+	  <httpclient.version>4.5.5</httpclient.version>
+	  <io.version>2.6</io.version>
+	  <ixa.pos.version>1.5.2</ixa.pos.version>
+	  <ixa.tok.version>1.8.6</ixa.tok.version>
+	  <ixa.nerc.version>1.6.0</ixa.nerc.version>
+	  <joda.version>2.9.9</joda.version>
+	  <lucene.version>7.3.0</lucene.version>
+	  <stanford.version>3.5.2</stanford.version><!-- 3.6.0 -->
+	  <stanford.parser.version>1.0</stanford.parser.version>
+	  <solr.version>7.4.0</solr.version>
+
+	  <unirest.version>1.4.9</unirest.version>
+  </properties>
+
+	  <dependencyManagement>
+		  <dependencies>
+
+			  <!-- librAIry -->
+			  <dependency>
+				  <groupId>org.librairy</groupId>
+				  <artifactId>learner-service-facade</artifactId>
+				  <version>${librairy.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>org.librairy</groupId>
+				  <artifactId>nlp-service-facade</artifactId>
+				  <version>${librairy.version}</version>
+			  </dependency>
+
+			  <!-- NLP Libraries -->
+			  <dependency>
+				  <groupId>eus.ixa</groupId>
+				  <artifactId>ixa-pipe-pos</artifactId>
+				  <version>${ixa.pos.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>eus.ixa</groupId>
+				  <artifactId>ixa-pipe-tok</artifactId>
+				  <version>${ixa.tok.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>eus.ixa</groupId>
+				  <artifactId>ixa-pipe-nerc</artifactId>
+				  <version>${ixa.nerc.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>org.apache.httpcomponents</groupId>
+				  <artifactId>httpclient</artifactId>
+				  <version>${httpclient.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>edu.stanford.nlp</groupId>
+				  <artifactId>stanford-corenlp</artifactId>
+				  <version>${stanford.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>edu.stanford.nlp</groupId>
+				  <artifactId>stanford-parser</artifactId>
+				  <version>${stanford.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>edu.stanford.nlp</groupId>
+				  <artifactId>stanford-corenlp</artifactId>
+				  <version>${stanford.version}</version>
+				  <classifier>models</classifier>
+			  </dependency>
+			  <!--<dependency>-->
+				  <!--<groupId>intoxicant.analytics</groupId>-->
+				  <!--<artifactId>coreNlpExtensions</artifactId>-->
+				  <!--<version>${coreNlpExtensions.version}</version>-->
+			  <!--</dependency>-->
+			  <dependency>
+				  <groupId>org.apache.lucene</groupId>
+				  <artifactId>lucene-core</artifactId>
+				  <version>${lucene.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>org.apache.lucene</groupId>
+				  <artifactId>lucene-analyzers-common</artifactId>
+				  <version>${lucene.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>org.apache.commons</groupId>
+				  <artifactId>commons-lang3</artifactId>
+				  <version>${commons-lang3.version}</version>
+			  </dependency>
+
+			  <!-- Solr -->
+			  <dependency>
+				  <groupId>org.apache.solr</groupId>
+				  <artifactId>solr-solrj</artifactId>
+				  <version>${solr.version}</version>
+			  </dependency>
+
+			  <!-- Http Libraries -->
+			  <dependency>
+				  <groupId>com.mashape.unirest</groupId>
+				  <artifactId>unirest-java</artifactId>
+				  <version>${unirest.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>org.jsoup</groupId>
+				  <artifactId>jsoup</artifactId>
+				  <version>${jsoup.version}</version>
+			  </dependency>
+
+			  <!-- JSON serializer -->
+			  <dependency>
+				  <groupId>com.fasterxml.jackson.core</groupId>
+				  <artifactId>jackson-databind</artifactId>
+				  <version>${jackson.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>com.fasterxml.jackson.core</groupId>
+				  <artifactId>jackson-annotations</artifactId>
+				  <version>${jackson.version}</version>
+			  </dependency>
+
+			  <!-- Commons -->
+			  <dependency>
+				  <groupId>com.google.guava</groupId>
+				  <artifactId>guava</artifactId>
+				  <version>${guava.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>commons-io</groupId>
+				  <artifactId>commons-io</artifactId>
+				  <version>${commons-io.version}</version>
+			  </dependency>
+
+			  <!-- ML Libraries -->
+			  <dependency>
+				  <groupId>cc.mallet</groupId>
+				  <artifactId>mallet</artifactId>
+				  <version>${mallet.version}</version>
+			  </dependency>
+
+			  <!-- Log Libraries -->
+			  <dependency>
+				  <groupId>ch.qos.logback</groupId>
+				  <artifactId>logback-classic</artifactId>
+				  <version>${logback.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>ch.qos.logback</groupId>
+				  <artifactId>logback-core</artifactId>
+				  <version>${logback.version}</version>
+			  </dependency>
+
+			  <dependency>
+				  <groupId>org.apache.commons</groupId>
+				  <artifactId>commons-text</artifactId>
+				  <version>${commons-text.version}</version>
+			  </dependency>
+
+			  <dependency>
+				  <groupId>commons-beanutils</groupId>
+				  <artifactId>commons-beanutils</artifactId>
+				  <version>${commons-beanutils.version}</version>
+			  </dependency>
+
+			  <!-- Unit tests Libraries -->
+			  <dependency>
+				  <groupId>junit</groupId>
+				  <artifactId>junit</artifactId>
+				  <version>${junit.version}</version>
+			  </dependency>
+
+		  </dependencies>
+	  </dependencyManagement>
+
+	  <dependencies>
+
+		  <!-- librAIry -->
+		  <dependency>
+			  <groupId>org.librairy</groupId>
+			  <artifactId>learner-service-facade</artifactId>
+		  </dependency>
+		  <dependency>
+			  <groupId>org.librairy</groupId>
+			  <artifactId>nlp-service-facade</artifactId>
+		  </dependency>
+
+		  <!-- NLP Libraries -->
+		  <dependency>
+			  <groupId>eus.ixa</groupId>
+			  <artifactId>ixa-pipe-pos</artifactId>
+			  <version>${ixa.pos.version}</version>
+		  </dependency>
+		  <dependency>
+			  <groupId>eus.ixa</groupId>
+			  <artifactId>ixa-pipe-tok</artifactId>
+			  <version>${ixa.tok.version}</version>
+		  </dependency>
+		  <dependency>
+			  <groupId>eus.ixa</groupId>
+			  <artifactId>ixa-pipe-nerc</artifactId>
+			  <version>${ixa.nerc.version}</version>
+		  </dependency>
+		  <dependency>
+			  <groupId>org.apache.httpcomponents</groupId>
+			  <artifactId>httpclient</artifactId>
+			  <version>${httpclient.version}</version>
+		  </dependency>
+		  <dependency>
+			  <groupId>edu.stanford.nlp</groupId>
+			  <artifactId>stanford-corenlp</artifactId>
+			  <version>${stanford.version}</version>
+		  </dependency>
+		  <dependency>
+			  <groupId>edu.stanford.nlp</groupId>
+			  <artifactId>stanford-parser</artifactId>
+			  <version>${stanford.version}</version>
+		  </dependency>
+		  <dependency>
+			  <groupId>edu.stanford.nlp</groupId>
+			  <artifactId>stanford-corenlp</artifactId>
+			  <version>${stanford.version}</version>
+			  <classifier>models</classifier>
+		  </dependency>
+		  <!--<dependency>-->
+			  <!--<groupId>intoxicant.analytics</groupId>-->
+			  <!--<artifactId>coreNlpExtensions</artifactId>-->
+			  <!--<version>${coreNlpExtensions.version}</version>-->
+		  <!--</dependency>-->
+		  <dependency>
+			  <groupId>org.apache.lucene</groupId>
+			  <artifactId>lucene-core</artifactId>
+			  <version>${lucene.version}</version>
+		  </dependency>
+		  <dependency>
+			  <groupId>org.apache.lucene</groupId>
+			  <artifactId>lucene-analyzers-common</artifactId>
+			  <version>${lucene.version}</version>
+		  </dependency>
+		  <dependency>
+			  <groupId>org.apache.commons</groupId>
+			  <artifactId>commons-lang3</artifactId>
+			  <version>${commons-lang3.version}</version>
+		  </dependency>
+
+		  <!-- Solr -->
+		  <dependency>
+			  <groupId>org.apache.solr</groupId>
+			  <artifactId>solr-solrj</artifactId>
+			  <version>${solr.version}</version>
+		  </dependency>
+
+		  <!-- Http Libraries -->
+		  <dependency>
+			  <groupId>com.mashape.unirest</groupId>
+			  <artifactId>unirest-java</artifactId>
+		  </dependency>
+		  <dependency>
+			  <groupId>org.jsoup</groupId>
+			  <artifactId>jsoup</artifactId>
+		  </dependency>
+
+		  <dependency>
+			  <groupId>org.apache.commons</groupId>
+			  <artifactId>commons-text</artifactId>
+		  </dependency>
+
+		  <dependency>
+			  <groupId>commons-beanutils</groupId>
+			  <artifactId>commons-beanutils</artifactId>
+		  </dependency>
+
+		  <!-- Commons -->
+		  <dependency>
+			  <groupId>com.google.guava</groupId>
+			  <artifactId>guava</artifactId>
+		  </dependency>
+		  <dependency>
+			  <groupId>commons-io</groupId>
+			  <artifactId>commons-io</artifactId>
+			  <version>${commons-io.version}</version>
+		  </dependency>
+
+		  <!-- ML Libraries -->
+		  <dependency>
+			  <groupId>cc.mallet</groupId>
+			  <artifactId>mallet</artifactId>
+		  </dependency>
+
+		  <!-- JSON Serializer -->
+		  <dependency>
+			  <groupId>com.fasterxml.jackson.core</groupId>
+			  <artifactId>jackson-databind</artifactId>
+		  </dependency>
+
+		  <!-- Unit tests -->
+		  <dependency>
+			  <groupId>junit</groupId>
+			  <artifactId>junit</artifactId>
+			  <scope>test</scope>
+		  </dependency>
+
+		  <!-- Logging -->
+		  <dependency>
+			  <groupId>ch.qos.logback</groupId>
+			  <artifactId>logback-classic</artifactId>
+		  </dependency>
+		  <dependency>
+			  <groupId>ch.qos.logback</groupId>
+			  <artifactId>logback-core</artifactId>
+		  </dependency>
+
+	  </dependencies>
+
+	  <build>
+		  <resources>
+			  <resource>
+				  <directory>src/main/resources</directory>
+				  <includes><include>*.*</include></includes>
+			  </resource>
+		  </resources>
+		  <finalName>${project.artifactId}</finalName>
+		  <plugins>
+
+			  <!-- Maven Compiler Plugin -->
+			  <plugin>
+				  <groupId>org.apache.maven.plugins</groupId>
+				  <artifactId>maven-compiler-plugin</artifactId>
+				  <version>${maven.compiler.plugin.version}</version>
+				  <configuration>
+					  <encoding>${project.build.sourceEncoding}</encoding>
+					  <source>${project.java.version}</source>
+					  <target>${project.java.version}</target>
+					  <compilerVersion>${project.java.version}</compilerVersion>
+				  </configuration>
+			  </plugin>
+
+			  <!-- Maven Test Plugin -->
+			  <plugin>
+				  <groupId>org.apache.maven.plugins</groupId>
+				  <artifactId>maven-surefire-plugin</artifactId>
+				  <version>2.11</version>
+				  <configuration>
+					  <excludes>
+						  <exclude>%regex[.*Workflow.*]</exclude>
+						  <exclude>%regex[.*Evaluation.*]</exclude>
+						  <exclude>%regex[.*Tasks.*]</exclude>
+					  </excludes>
+				  </configuration>
+			  </plugin>
+		  </plugins>
+	  </build>
+
+	<repositories>
+
+		<!-- librAIry Learner Repository -->
+		<repository>
+			<id>learner-service</id>
+			<url>https://raw.github.com/librairy/learner-service-facade/mvn-repo/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+
+
+		<!-- librAIry NLP-EN Repository -->
+		<repository>
+			<id>nlp-en-service</id>
+			<url>https://raw.github.com/librairy/nlpEN-service/mvn-repo/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+
+		<!-- librAIry NLP-ES Repository -->
+		<repository>
+			<id>nlp-es-service</id>
+			<url>https://raw.github.com/librairy/nlpES-service/mvn-repo/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+
+		<!-- librAIry NLP-PT Repository -->
+		<repository>
+			<id>nlp-pt-service</id>
+			<url>https://raw.github.com/librairy/nlpPT-service/mvn-repo/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+
+		<!-- librAIry Modeler Repository -->
+		<repository>
+			<id>modeler-service</id>
+			<url>https://raw.github.com/librairy/modeler-service-facade/mvn-repo/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+
+		<!-- librAIry NLP Repository -->
+		<repository>
+			<id>nlp-service</id>
+			<url>https://raw.github.com/librairy/nlp-service-facade/mvn-repo/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+
+
+		<!-- librAIry Swagger Repository -->
+		<repository>
+			<id>swagger</id>
+			<url>https://raw.github.com/librairy/swagger/mvn-repo/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+
+		<!-- Custom Mallet Repository -->
+		<repository>
+			<id>mallet</id>
+			<url>https://raw.github.com/cbadenes/Mallet/mvn-repo/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+
+	</repositories>
+
+  </project>
