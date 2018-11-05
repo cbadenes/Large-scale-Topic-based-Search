@@ -47,17 +47,28 @@ public class Evaluation {
     }
 
     public Double getPrecision(){
-        return Double.valueOf(truePositive) / (Double.valueOf(truePositive)+ Double.valueOf(falsePositive));
+
+        double positive = (Double.valueOf(truePositive) + Double.valueOf(falsePositive));
+
+        if (positive == 0.0) return 0.0;
+
+        return Double.valueOf(truePositive) / positive;
     }
 
 
     public Double getRecall(){
-        return Double.valueOf(truePositive) / (Double.valueOf(truePositive)+ Double.valueOf(falseNegative));
+
+        double positive = (Double.valueOf(truePositive)+ Double.valueOf(falseNegative));
+
+        if (positive == 0.0) return 0.0;
+
+        return Double.valueOf(truePositive) / positive;
     }
 
     public Double getFMeasure(){
         Double precision = getPrecision();
         Double recall = getRecall();
+        if ((precision == 0) && (recall == 0)) return 0.0;
         return 2 * (precision*recall) / (precision+recall);
     }
 

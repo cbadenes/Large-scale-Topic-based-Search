@@ -1,7 +1,5 @@
 package oeg.lstbs.metrics;
 
-import cc.mallet.util.Maths;
-import com.google.common.primitives.Doubles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +9,7 @@ import java.util.List;
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
  */
 
-public class Hellinger implements SimilarityMetric{
+public class Hellinger implements ComparisonMetric {
 
     private static final Logger LOG = LoggerFactory.getLogger(Hellinger.class);
 
@@ -21,7 +19,7 @@ public class Hellinger implements SimilarityMetric{
     }
 
     @Override
-    public Double compare(List<Double> v1, List<Double> v2) {
+    public Double distance(List<Double> v1, List<Double> v2) {
 
         assert (v1.size() == v2.size());
 
@@ -35,6 +33,13 @@ public class Hellinger implements SimilarityMetric{
             sum += pow2;
         }
 
-        return sum;
+        double sqrtSum = Math.sqrt(sum);
+        double multiplier = 1.0 / Math.sqrt(2.0);
+        return multiplier*sqrtSum;
+    }
+
+    @Override
+    public Double similarity(List<Double> v1, List<Double> v2) {
+        return 1-distance(v1,v2);
     }
 }

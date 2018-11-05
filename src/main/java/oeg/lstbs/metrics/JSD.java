@@ -1,20 +1,16 @@
 package oeg.lstbs.metrics;
 
-import cc.mallet.util.Maths;
-import com.google.common.primitives.Doubles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
  */
 
-public class JSD implements SimilarityMetric{
+public class JSD implements ComparisonMetric {
 
     private static final Logger LOG = LoggerFactory.getLogger(JSD.class);
 
@@ -25,7 +21,7 @@ public class JSD implements SimilarityMetric{
     }
 
     @Override
-    public Double compare(List<Double> v1, List<Double> v2) {
+    public Double distance(List<Double> v1, List<Double> v2) {
         assert (v1.size() == v2.size());
 
         List<Double> avg = new ArrayList<>();
@@ -35,7 +31,12 @@ public class JSD implements SimilarityMetric{
             avg.add(pq_2);
         }
 
-        return (0.5 * new KL().compare(v1,avg)) + (0.5 * new KL().compare(v2, avg));
+        return (0.5 * new KL().distance(v1,avg)) + (0.5 * new KL().distance(v2, avg));
+    }
+
+    @Override
+    public Double similarity(List<Double> v1, List<Double> v2) {
+        return 1-distance(v1,v2);
     }
 
 }

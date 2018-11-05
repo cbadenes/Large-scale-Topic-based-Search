@@ -24,12 +24,11 @@ public class TopicBasedSimilarityExperiment {
 
     private static final Logger LOG = LoggerFactory.getLogger(TopicBasedSimilarityExperiment.class);
 
-
-    SimilarityMetric metric = new Hellinger();
-
     long seed = 1546;
 
     int numPairs    = 10; // 10
+
+    ComparisonMetric metric = new Hellinger();
 
     List<String> models = Arrays.asList(
             "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download",    // 100 topics
@@ -88,7 +87,7 @@ public class TopicBasedSimilarityExperiment {
                 List<Double> v1 = vectors.get(points.get(i));
                 List<Double> v2 = vectors.get(points.get(i+1));
 
-                scoreList.add(metric.compare(v1, v2));
+                scoreList.add(metric.distance(v1, v2));
             }
 
             int topics = 100 * index++;

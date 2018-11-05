@@ -1,12 +1,13 @@
 package oeg.lstbs.algorithms;
 
+import com.google.common.collect.MinMaxPriorityQueue;
 import oeg.lstbs.data.Document;
 import oeg.lstbs.data.LuceneRepository;
 import oeg.lstbs.data.Similarity;
 import oeg.lstbs.io.SerializationUtils;
-import oeg.lstbs.metrics.SimilarityMetric;
-import org.apache.lucene.document.BinaryDocValuesField;
+import oeg.lstbs.metrics.ComparisonMetric;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.ScoreDoc;
@@ -15,8 +16,8 @@ import org.apache.lucene.util.BytesRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
@@ -25,6 +26,7 @@ import java.util.List;
 public class BruteForceAlgorithm implements Explorer {
 
     private static final Logger LOG = LoggerFactory.getLogger(BruteForceAlgorithm.class);
+
     private final LuceneRepository repository;
 
     public BruteForceAlgorithm() {
@@ -40,7 +42,7 @@ public class BruteForceAlgorithm implements Explorer {
         luceneDoc.add(new TextField("name", document.getId(), Field.Store.YES));
 
         BytesRef bytesRef = new BytesRef(SerializationUtils.serialize(document.getVector()));
-        luceneDoc.add(new BinaryDocValuesField("vector", bytesRef));
+        luceneDoc.add(new StoredField("vector", bytesRef));
 
         this.repository.add(luceneDoc);
         return true;
@@ -53,14 +55,12 @@ public class BruteForceAlgorithm implements Explorer {
     }
 
     @Override
-    public List<Document> findDuplicates(SimilarityMetric metric) {
+    public List<Similarity> findDuplicates(ComparisonMetric metric, int maxResults) {
+
+
+        MinMaxPriorityQueue<Similarity> pairs = MinMaxPriorityQueue.orderedBy(new Similarity.ScoreComparator()).maximumSize(maxResults).create();
 
         TopDocs results = this.repository.getBy(new MatchAllDocsQuery(), -1);
-
-        List<Document> documents = new ArrayList<>();
-
-        Double topScore = 0.0;
-        List<Document> similarDocs = new ArrayList<>();
 
         for(ScoreDoc scoreDoc: results.scoreDocs){
             org.apache.lucene.document.Document doc = repository.getDocument(scoreDoc.doc);
@@ -72,18 +72,47 @@ public class BruteForceAlgorithm implements Explorer {
 
             Document d1 = new Document(id,vector);
 
-            documents.stream().map(d2 -> new Similarity(metric.compare(d1.getVector(), d2.getVector()), d1, d2));
-
-            documents.add(d1);
-
+            for(Similarity sim: findSimilarTo(d1, scoreDoc.doc, metric, maxResults)){
+                pairs.add(sim);
+            }
         }
 
-        return null;
+        return pairs.stream().sorted((a,b) -> -a.getScore().compareTo(b.getScore())).collect(Collectors.toList());
     }
 
     @Override
-    public List<Document> findSimilarTo(Document query, SimilarityMetric metric, int maxResults) {
-        return null;
+    public List<Similarity> findSimilarTo(Document query, ComparisonMetric metric, int maxResults) {
+
+        return findSimilarTo(query,0,metric,maxResults);
+    }
+
+    private List<Similarity> findSimilarTo(Document query, int offset, ComparisonMetric metric, int maxResults) {
+
+        TopDocs results = this.repository.getBy(new MatchAllDocsQuery(), -1);
+
+        MinMaxPriorityQueue<Similarity> pairs = MinMaxPriorityQueue.orderedBy(new Similarity.ScoreComparator()).maximumSize(maxResults).create();
+
+        for(ScoreDoc scoreDoc: results.scoreDocs){
+
+            if (scoreDoc.doc <= offset) continue;
+
+            org.apache.lucene.document.Document doc = repository.getDocument(scoreDoc.doc);
+
+            String id = String.format(doc.get("name"));
+
+            if (id.equalsIgnoreCase(query.getId())) continue;
+
+            BytesRef byteRef = doc.getBinaryValue("vector");
+            List<Double> vector = (List<Double>) SerializationUtils.deserialize(byteRef.bytes);
+
+            Document d1 = new Document(id,vector);
+
+            Similarity similarity = new Similarity(metric.similarity(d1.getVector(), query.getVector()), query, d1);
+
+            pairs.add(similarity);
+        }
+
+        return pairs.stream().sorted((a,b) -> -a.getScore().compareTo(b.getScore())).collect(Collectors.toList());
     }
 
 }

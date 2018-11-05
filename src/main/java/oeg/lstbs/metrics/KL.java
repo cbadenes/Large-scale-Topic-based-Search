@@ -1,7 +1,5 @@
 package oeg.lstbs.metrics;
 
-import cc.mallet.util.Maths;
-import com.google.common.primitives.Doubles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +9,7 @@ import java.util.List;
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
  */
 
-public class KL implements SimilarityMetric{
+public class KL implements ComparisonMetric {
 
     private static final Logger LOG = LoggerFactory.getLogger(KL.class);
 
@@ -21,7 +19,7 @@ public class KL implements SimilarityMetric{
     }
 
     @Override
-    public Double compare(List<Double> v1, List<Double> v2) {
+    public Double distance(List<Double> v1, List<Double> v2) {
 
         assert (v1.size() == v2.size());
 
@@ -37,5 +35,10 @@ public class KL implements SimilarityMetric{
         }
         return klDiv; // moved this division out of the loop -DM
 
+    }
+
+    @Override
+    public Double similarity(List<Double> v1, List<Double> v2) {
+        return 1-distance(v1,v2);
     }
 }

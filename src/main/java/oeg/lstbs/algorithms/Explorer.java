@@ -1,7 +1,8 @@
 package oeg.lstbs.algorithms;
 
 import oeg.lstbs.data.Document;
-import oeg.lstbs.metrics.SimilarityMetric;
+import oeg.lstbs.data.Similarity;
+import oeg.lstbs.metrics.ComparisonMetric;
 
 import java.util.List;
 
@@ -17,9 +18,10 @@ public interface Explorer {
     /**
      * Results measured in terms of precision, recall, map and time
      * @param metric similarity metric
+     * @param maxResults maximum number of documents to be returned
      * @return documents with the highest similarity value in the corpus
      */
-    List<Document> findDuplicates(SimilarityMetric metric);
+    List<Similarity> findDuplicates(ComparisonMetric metric, int maxResults);
 
     /**
      * Results measured in terms of precision, recall, map and time
@@ -28,5 +30,5 @@ public interface Explorer {
      * @param maxResults maximum number of documents to be returned
      * @return
      */
-    List<Document> findSimilarTo(Document query, SimilarityMetric metric, int maxResults);
+    List<Similarity> findSimilarTo(Document query, ComparisonMetric metric, int maxResults);
 }

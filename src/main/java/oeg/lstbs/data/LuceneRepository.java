@@ -29,14 +29,17 @@ public class LuceneRepository {
     private static final Logger LOG = LoggerFactory.getLogger(LuceneRepository.class);
     private final IndexWriter writer;
     private final FSDirectory directory;
+    private final String id;
     private DirectoryReader reader;
     private AtomicInteger counter = new AtomicInteger();
     private IndexSearcher searcher;
 
     public LuceneRepository(String id) {
         try {
+            this.id = id;
             File indexFile = File.createTempFile(id,".tmp");
             indexFile.getParentFile().mkdirs();
+            if (indexFile.exists()) indexFile.delete();
             this.directory = FSDirectory.open(indexFile.toPath());
             IndexWriterConfig writerConfig = new IndexWriterConfig(new RepositoryAnalyzer());
             writerConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
@@ -51,13 +54,15 @@ public class LuceneRepository {
         try {
             writer.addDocument(doc);
             if (counter.incrementAndGet() % 100 == 0 ) {
-                LOG.info("added " + counter.get() + " documents");
                 commit();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
 
+    public int getSize(){
+        return getReader().numDocs();
     }
 
     public void commit(){
@@ -93,7 +98,23 @@ public class LuceneRepository {
                 searcher  = new IndexSearcher(reader);
             }
 
-            return searcher.search(new MatchAllDocsQuery(), (max<0? reader.numDocs() : max));
+            return searcher.search(query, (max<0? reader.numDocs() : max));
+
+        } catch (IOException e) {
+            throw new RuntimeException("Unexpected error",e);
+        }
+    }
+
+    public DirectoryReader getReader(){
+        try {
+            if (reader == null) {
+                writer.commit();
+                writer.close();
+                reader = DirectoryReader.open(directory);
+                searcher  = new IndexSearcher(reader);
+            }
+
+            return reader;
 
         } catch (IOException e) {
             throw new RuntimeException("Unexpected error",e);

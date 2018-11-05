@@ -9,7 +9,7 @@ import java.util.List;
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
  */
 
-public class S2JSD implements SimilarityMetric{
+public class S2JSD implements ComparisonMetric {
 
     private static final Logger LOG = LoggerFactory.getLogger(S2JSD.class);
 
@@ -19,7 +19,12 @@ public class S2JSD implements SimilarityMetric{
     }
 
     @Override
-    public Double compare(List<Double> v1, List<Double> v2) {
-        return Math.sqrt(2.0 * new JSD().compare(v1,v2));
+    public Double distance(List<Double> v1, List<Double> v2) {
+        return Math.sqrt(2.0 * new JSD().distance(v1,v2));
+    }
+
+    @Override
+    public Double similarity(List<Double> v1, List<Double> v2) {
+        return 1-distance(v1,v2);
     }
 }
