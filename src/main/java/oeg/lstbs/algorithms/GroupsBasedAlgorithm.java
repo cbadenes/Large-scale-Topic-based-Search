@@ -2,25 +2,24 @@ package oeg.lstbs.algorithms;
 
 import com.google.common.collect.MinMaxPriorityQueue;
 import oeg.lstbs.data.*;
-import oeg.lstbs.data.Document;
 import oeg.lstbs.io.SerializationUtils;
 import oeg.lstbs.metrics.ComparisonMetric;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.*;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.misc.HighFreqTerms;
 import org.apache.lucene.misc.TermStats;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.BytesRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import sun.jvm.hotspot.oops.IntField;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
