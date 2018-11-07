@@ -43,9 +43,9 @@ public class DuplicatesExperiment {
         // OpenResearchCorpus
         models.put(100,"https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download");
         models.put(300,"https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download");
-//        models.put(500,"https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download");
-//        models.put(800,"https://delicias.dia.fi.upm.es/nextcloud/index.php/s/d94eCryDqbZtMd4/download");
-//        models.put(1000,"https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zSgR5H4CsPnPmHG/download");
+        models.put(500,"https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download");
+        models.put(800,"https://delicias.dia.fi.upm.es/nextcloud/index.php/s/d94eCryDqbZtMd4/download");
+        models.put(1000,"https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zSgR5H4CsPnPmHG/download");
 
         // Cordis
 //        models.put(70,"https://delicias.dia.fi.upm.es/nextcloud/index.php/s/82z5WRNbYftqr2L/download");
@@ -60,8 +60,9 @@ public class DuplicatesExperiment {
 
             List<ComparisonMetric> metrics = Arrays.asList(new JSD());
             List<Integer> accuracies = Arrays.asList(1,3,5,10);
-            int sampleSize  = 1000; //1000
-            int iterations  = 2; //10
+            int sampleSize      = 1000; //1000
+            int iterations      = 10; //10
+            double threshold    = 0.9;
             // 10 random training/test partitions. For each partition, we randomly select 1k articles
 
             String corpus = models.get(corpusId);
@@ -118,7 +119,7 @@ public class DuplicatesExperiment {
                     Evaluation eval1 = new Evaluation();
                     eval1.setStart(Instant.now());
                     AtomicInteger maxCounter = new AtomicInteger();
-                    List<Similarity> bruteForceDuplicates = bruteForceAlgorithm.findDuplicates(metric, accuracies.stream().reduce((a,b) -> (a>b)? a: b).get(),0, maxCounter).stream().filter(sim -> sim.getScore()>0.95).collect(Collectors.toList());
+                    List<Similarity> bruteForceDuplicates = bruteForceAlgorithm.findDuplicates(metric, accuracies.stream().reduce((a,b) -> (a>b)? a: b).get(),0, maxCounter).stream().filter(sim -> sim.getScore()>threshold).collect(Collectors.toList());
                     eval1.setEnd(Instant.now());
                     for(Similarity sim: bruteForceDuplicates){
                         LOG.info("["+metric.id()+"] Duplicated Candidate: " + sim);
@@ -141,6 +142,7 @@ public class DuplicatesExperiment {
                         // -> Density-based Approach
                         for(Integer level : Arrays.asList(1,2,3,4,5)){
                             Evaluation eval2 = new Evaluation();
+                            eval2.setDescription("it"+i);
                             eval2.setStart(Instant.now());
                             AtomicInteger densityCounter = new AtomicInteger();
                             List<Similarity> densityDuplicates = densityBasedAlgorithm.findDuplicates(metric, n, level, densityCounter);
@@ -159,6 +161,7 @@ public class DuplicatesExperiment {
 
                         // -> Threshold-based Approach
                         Evaluation eval3 = new Evaluation();
+                        eval3.setDescription("it"+i);
                         eval3.setStart(Instant.now());
                         AtomicInteger thresholdCounter = new AtomicInteger();
                         List<Similarity> thresholdDuplicates = thresholdBasedAlgorithm.findDuplicates(metric, n,1,thresholdCounter);
@@ -177,11 +180,16 @@ public class DuplicatesExperiment {
             LOG.info("Creating reports .. ");
             for(String algorithm: results.keySet()){
                 LOG.info("Algorithm '" + algorithm + "' in Corpus " + corpusId + ": " );
-                Report report = new Report(results.get(algorithm));
+                List<Evaluation> evaluations = results.get(algorithm);
+                Report report = new Report(evaluations);
                 LOG.info("\t- mAP: " + report.getmAP());
                 LOG.info("\t- precision: " + report.getPrecision());
+                LOG.info("\t- recall: " + report.getRecall());
                 LOG.info("\t- improvement: " + report.getImprovement());
                 LOG.info("\t- fmeasure: " + report.getFMeasure());
+                for(Evaluation e : evaluations){
+                    LOG.info("\t [-] Evaluation: " + e);
+                }
             }
 
         }

@@ -25,6 +25,15 @@ public class Evaluation {
 
     private double improvement  = 0.0;
 
+    private String description  = "";
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public synchronized void addResult(List<String> reference, List<String> value){
 
@@ -102,6 +111,7 @@ public class Evaluation {
     @Override
     public String toString() {
         return "Evaluation{" +
+                "description="     + description +
                 "truePositive="     + truePositive +
                 ", falsePositive="  + falsePositive +
                 ", falseNegative="  + falseNegative +
