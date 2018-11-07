@@ -23,7 +23,7 @@ public class ThresholdBasedAlgorithm extends GroupsBasedAlgorithm {
     }
 
     @Override
-    protected List<TopicPoint> getGroups(List<Double> vector) {
+    public List<TopicPoint> getGroups(List<Double> vector) {
         final double threshold = 1.0 / Double.valueOf(vector.size());
 
         List<TopicPoint> activeTopics = IntStream.range(0, vector.size()).mapToObj(i -> new TopicPoint("t" + i, vector.get(i))).filter(tp -> tp.getScore() > threshold).collect(Collectors.toList());

@@ -19,6 +19,12 @@ public class Evaluation {
 
     private Instant end;
 
+    private double precision    = 0.0;
+
+    private double recall       = 0.0;
+
+    private double improvement  = 0.0;
+
 
     public synchronized void addResult(List<String> reference, List<String> value){
 
@@ -28,6 +34,14 @@ public class Evaluation {
 
         falseNegative   += reference.stream().filter( e -> !value.contains(e)).count();
 
+    }
+
+    public double getImprovement() {
+        return improvement;
+    }
+
+    public void setImprovement(double improvement) {
+        this.improvement = improvement;
     }
 
     public Instant getStart() {
@@ -48,6 +62,8 @@ public class Evaluation {
 
     public Double getPrecision(){
 
+        if (precision != 0.0) return precision;
+
         double positive = (Double.valueOf(truePositive) + Double.valueOf(falsePositive));
 
         if (positive == 0.0) return 0.0;
@@ -55,8 +71,19 @@ public class Evaluation {
         return Double.valueOf(truePositive) / positive;
     }
 
+    public Evaluation setPrecision(double precision) {
+        this.precision = precision;
+        return this;
+    }
+
+    public Evaluation setRecall(double recall) {
+        this.recall = recall;
+        return this;
+    }
 
     public Double getRecall(){
+
+        if (precision != 0.0) return recall;
 
         double positive = (Double.valueOf(truePositive)+ Double.valueOf(falseNegative));
 
@@ -81,6 +108,7 @@ public class Evaluation {
                 ", precision="      + getPrecision()+
                 ", recall="         + getRecall() +
                 ", fMeasure="       + getFMeasure() +
+                ", improvement="       + getImprovement() +
                 ", elapsedTime="       + ((start!= null && end!=null)?  Time.print(start,end,"") : "")+
                 '}';
     }

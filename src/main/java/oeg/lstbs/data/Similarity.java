@@ -1,5 +1,6 @@
 package oeg.lstbs.data;
 
+import oeg.lstbs.algorithms.DensityBasedAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,8 +62,10 @@ public class Similarity {
     public String toString() {
         return "Similarity{" +
                 "score=" + score +
-                ", d1=" + d1 +
-                ", d2=" + d2 +
+                ", d1.id=" + d1.getId() +
+                ", d1.topics=" + new TopicSummary(new DensityBasedAlgorithm().getGroups(d1.getVector())).getReducedHashTopicsBy(1) +
+                ", d2.id=" + d2.getId() +
+                ", d2.topics=" + new TopicSummary(new DensityBasedAlgorithm().getGroups(d2.getVector())).getReducedHashTopicsBy(1) +
                 '}';
     }
 

@@ -3,6 +3,7 @@ package experiments;
 import oeg.lstbs.data.Document;
 import oeg.lstbs.io.ReaderUtils;
 import oeg.lstbs.metrics.*;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,21 +29,37 @@ public class TopicBasedSimilarityExperiment {
 
     int numPairs    = 10; // 10
 
-    ComparisonMetric metric = new Hellinger();
+    ComparisonMetric metric = new KL();
 
-    List<String> models = Arrays.asList(
-            "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download",    // 100 topics
-            "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/nRWxmYH6AjHqA6N/download",    // 200 topics
-            "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download",    // 300 topics
-            "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/KYtEqTB8zyaKb8N/download",    // 400 topics
-            "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download",    // 500 topics
-            "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/7wYmtWNiYnbHoZP/download",    // 600 topics
-            "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/xF7K3jtnTaWFjrN/download",    // 700 topics
-            "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/d94eCryDqbZtMd4/download",    // 800 topics
-            "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/TQK5aHWREPSdDLQ/download",    // 900 topics
-            "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zSgR5H4CsPnPmHG/download",     // 1000 topics
-            "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/MG7Zn94J4xTaRqL/download"     // 1100 topics
-    );
+    Map<Integer,String> topicModels = new HashMap<>();
+
+    @Before
+    public void setup() {
+//        topicModels.put(10, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/inDm3rNkZABoBPS/download");
+//        topicModels.put(20, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/FBXEEfb6iQrSKFP/download");
+//        topicModels.put(30, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/ob4NBfpXiMRJKME/download");
+//        topicModels.put(40, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/gnbbFaCwHT2CxtR/download");
+        topicModels.put(100, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download");
+        topicModels.put(200, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/nRWxmYH6AjHqA6N/download");
+        topicModels.put(300, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download");
+        topicModels.put(400, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/KYtEqTB8zyaKb8N/download");
+        topicModels.put(500, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download");
+        topicModels.put(600, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/7wYmtWNiYnbHoZP/download");
+        topicModels.put(700, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/xF7K3jtnTaWFjrN/download");
+        topicModels.put(800, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/d94eCryDqbZtMd4/download");
+        topicModels.put(900, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/TQK5aHWREPSdDLQ/download");
+        topicModels.put(1000, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zSgR5H4CsPnPmHG/download");
+        topicModels.put(1100, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/MG7Zn94J4xTaRqL/download");
+        topicModels.put(1200, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/i8P5JKJ5RCZG3Xe/download");
+        topicModels.put(1300, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/SaPFLK2gb2KiCMr/download");
+        topicModels.put(1400, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/aaaCQpwQRKgyFQ3/download");
+        topicModels.put(1500, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/PCFjBFfwfzf2WM9/download");
+        topicModels.put(1600, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/8ifFKeypCsdttCs/download");
+        topicModels.put(1700, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/ntM5KzW6X9m5kcW/download");
+        topicModels.put(1800, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/R3aztCF49xykeLS/download");
+        topicModels.put(1900, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/FGBLtESCEr7SAbN/download");
+        topicModels.put(2000, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/itkmdeESJeLQPXY/download");
+    }
 
     @Test
     public void execute() throws IOException {
@@ -50,7 +67,7 @@ public class TopicBasedSimilarityExperiment {
 
         List<String> points = new ArrayList<>();
         // Load test points
-        BufferedReader r = ReaderUtils.from(models.get(0));
+        BufferedReader r = ReaderUtils.from(topicModels.entrySet().iterator().next().getValue());
         String l;
         while ( (l = r.readLine()) != null){
             String id = l.split(",")[0];
@@ -64,9 +81,9 @@ public class TopicBasedSimilarityExperiment {
 
 
         System.out.println("Topics\t"+ IntStream.range(0,numPairs).mapToObj(i -> "Pair"+i).collect(Collectors.joining("\t")));
-        int index = 1;
-        for(String model: models){
+        for(Integer topics: topicModels.keySet().stream().sorted((a,b) -> a.compareTo(b)).collect(Collectors.toList())){
 
+            String model = topicModels.get(topics);
             Map<String,List<Double>> vectors = new HashMap<>();
 
             BufferedReader reader = ReaderUtils.from(model);
@@ -90,7 +107,6 @@ public class TopicBasedSimilarityExperiment {
                 scoreList.add(metric.distance(v1, v2));
             }
 
-            int topics = 100 * index++;
             System.out.println(topics +"\t" + scoreList.stream().map(s -> ""+s).collect(Collectors.joining("\t")));
 
         }

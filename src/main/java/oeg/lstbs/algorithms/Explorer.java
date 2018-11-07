@@ -5,6 +5,7 @@ import oeg.lstbs.data.Similarity;
 import oeg.lstbs.metrics.ComparisonMetric;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
@@ -21,7 +22,7 @@ public interface Explorer {
      * @param maxResults maximum number of documents to be returned
      * @return documents with the highest similarity value in the corpus
      */
-    List<Similarity> findDuplicates(ComparisonMetric metric, int maxResults);
+    List<Similarity> findDuplicates(ComparisonMetric metric, int maxResults, int level, AtomicInteger counter);
 
     /**
      * Results measured in terms of precision, recall, map and time

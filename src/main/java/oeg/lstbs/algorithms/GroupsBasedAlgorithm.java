@@ -20,7 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -31,7 +33,7 @@ public abstract class GroupsBasedAlgorithm implements Explorer {
 
     private static final Logger LOG = LoggerFactory.getLogger(GroupsBasedAlgorithm.class);
 
-    private final LuceneRepository repository;
+    protected final LuceneRepository repository;
     private final int maxGroups;
 
     public GroupsBasedAlgorithm(String id, int maxGroups) {
@@ -39,7 +41,7 @@ public abstract class GroupsBasedAlgorithm implements Explorer {
         this.maxGroups = maxGroups;
     }
 
-    protected abstract List<TopicPoint> getGroups(List<Double> vector);
+    public abstract List<TopicPoint> getGroups(List<Double> vector);
 
     @Override
     public boolean add(Document document) {
@@ -50,24 +52,26 @@ public abstract class GroupsBasedAlgorithm implements Explorer {
 
         org.apache.lucene.document.Document luceneDoc = new org.apache.lucene.document.Document();
 
+
+
         luceneDoc.add(new TextField("name", document.getId(), Field.Store.YES));
 
         BytesRef bytesRef = new BytesRef(SerializationUtils.serialize(document.getVector()));
         luceneDoc.add(new StoredField("vector", bytesRef));
 
-        for (int i = 0; i <= maxGroups; i++) {
+        for (int i = 1; i <= maxGroups; i++) {
 
             int tail = i;
 
             luceneDoc.add(new StringField("hashcodeR" + tail, ""+ topicSummary.getReducedHashCodeBy(tail), Field.Store.YES));
 
-            luceneDoc.add(new StringField("hashexpR" + tail, "" + topicSummary.getReducedHashTopicsBy(tail), Field.Store.YES));
+            luceneDoc.add(new TextField("hashexpR" + tail, "" + topicSummary.getReducedHashTopicsBy(tail).replace("#"," "), Field.Store.YES));
 
             int top = (maxGroups - i);
 
             luceneDoc.add(new StringField("hashcodeT" + top, "" +topicSummary.getTopHashCodeBy(top), Field.Store.YES));
 
-            luceneDoc.add(new StringField("hashexpT" + top, "" + topicSummary.getTopHashTopicsBy(top), Field.Store.YES));
+            luceneDoc.add(new TextField("hashexpT" + top, "" + topicSummary.getTopHashTopicsBy(top).replace("#"," "), Field.Store.YES));
         }
 
         this.repository.add(luceneDoc);
@@ -83,13 +87,13 @@ public abstract class GroupsBasedAlgorithm implements Explorer {
     }
 
     @Override
-    public List<Similarity> findDuplicates(ComparisonMetric metric, int maxResults) {
+    public List<Similarity> findDuplicates(ComparisonMetric metric, int maxResults, int level, AtomicInteger counter) {
 
-        List<Similarity> duplicates = getDuplicatesByField("hashcodeR0", metric, maxResults);
+        List<Similarity> duplicates = getDuplicatesByField("hashcodeR"+level, metric, maxResults, counter);
         return duplicates;
     }
 
-    private List<Similarity> getDuplicatesByField(String fieldName, ComparisonMetric metric, int maxResults) {
+    private List<Similarity> getDuplicatesByField(String fieldName, ComparisonMetric metric, int maxResults, AtomicInteger counter) {
         MinMaxPriorityQueue<Similarity> pairs = MinMaxPriorityQueue.orderedBy(new Similarity.ScoreComparator()).maximumSize(maxResults).create();
         IndexReader reader = repository.getReader();
         TermStats[] commonTerms;
@@ -119,6 +123,7 @@ public abstract class GroupsBasedAlgorithm implements Explorer {
                     Document d1 = new Document(id, vector);
 
                     for (Document d2 : docs) {
+                        counter.incrementAndGet();
                         pairs.add(new Similarity(metric.similarity(d1.getVector(), d2.getVector()), d1, d2));
                     }
 

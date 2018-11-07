@@ -1,5 +1,7 @@
 package oeg.lstbs.metrics;
 
+import cc.mallet.util.Maths;
+import com.google.common.primitives.Doubles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +38,12 @@ public class JSD implements ComparisonMetric {
 
     @Override
     public Double similarity(List<Double> v1, List<Double> v2) {
-        return 1-distance(v1,v2);
+        return 1-divergence(v1,v2);
+    }
+
+    private double divergence(List<Double> v1, List<Double> v2) {
+        return Maths.jensenShannonDivergence(Doubles.toArray(v1),Doubles.toArray(v2));
+
     }
 
 }

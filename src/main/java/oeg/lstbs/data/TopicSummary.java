@@ -31,12 +31,12 @@ public class TopicSummary {
     }
 
     public String getReducedHashTopicsBy(int num) {
-        if (groups.size()<=num) return getTopHashTopicsBy(1);
+        if (groups.size()<=num) return groups.subList(0,1).stream().map(tp -> tp.getId()).collect(Collectors.joining(GROUP_SEPARATOR));
         return groups.subList(0,groups.size()-num).stream().map(tp -> tp.getId()).collect(Collectors.joining(GROUP_SEPARATOR));
     }
 
     public Integer getReducedHashCodeBy(int num){
-        if (groups.size()<=num) return getTopHashCodeBy(1);
+        if (groups.size()<=num) return hf.hashString(groups.subList(0,1).stream().map(tp -> tp.getId()).collect(Collectors.joining(GROUP_SEPARATOR)), Charset.defaultCharset()).asInt();
         return hf.hashString(groups.subList(0,groups.size()-num).stream().map(tp -> tp.getId()).collect(Collectors.joining(GROUP_SEPARATOR)), Charset.defaultCharset()).asInt();
     }
 

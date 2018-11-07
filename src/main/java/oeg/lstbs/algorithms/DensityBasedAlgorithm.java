@@ -1,16 +1,30 @@
 package oeg.lstbs.algorithms;
 
+import com.google.common.collect.MinMaxPriorityQueue;
+import oeg.lstbs.data.Document;
+import oeg.lstbs.data.Similarity;
 import oeg.lstbs.data.Stats;
 import oeg.lstbs.data.TopicPoint;
+import oeg.lstbs.io.SerializationUtils;
+import oeg.lstbs.metrics.ComparisonMetric;
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
 import org.apache.commons.math3.ml.distance.DistanceMeasure;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.misc.HighFreqTerms;
+import org.apache.lucene.misc.TermStats;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.util.BytesRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -26,11 +40,11 @@ public class DensityBasedAlgorithm extends GroupsBasedAlgorithm {
         super("density-based",5);
     }
 
-    protected List<TopicPoint> getGroups(List<Double> topicDistribution) {
+    public List<TopicPoint> getGroups(List<Double> topicDistribution) {
         Stats stats = new Stats(topicDistribution);
         DistanceMeasure distanceMeasure = new MonoDimensionalDistanceMeasure();
-        //double eps = stats.getVariance();
-        double eps = stats.getMedian();
+        double eps = stats.getVariance();
+//        double eps = stats.getMedian();
         int minPts = 0;
 
         DBSCANClusterer<TopicPoint> clusterer = new DBSCANClusterer<>(eps, minPts, distanceMeasure);
@@ -59,6 +73,7 @@ public class DensityBasedAlgorithm extends GroupsBasedAlgorithm {
         Collections.sort(groups, (a, b) -> -a.getScore().compareTo(b.getScore()));
         return groups;
     }
+
 
     private class MonoDimensionalDistanceMeasure implements DistanceMeasure {
 

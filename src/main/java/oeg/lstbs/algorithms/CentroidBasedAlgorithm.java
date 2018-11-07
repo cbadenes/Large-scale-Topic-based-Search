@@ -20,7 +20,7 @@ public class CentroidBasedAlgorithm extends GroupsBasedAlgorithm {
     }
 
     @Override
-    protected List<TopicPoint> getGroups(List<Double> vector) {
+    public List<TopicPoint> getGroups(List<Double> vector) {
         return null;
     }
 }

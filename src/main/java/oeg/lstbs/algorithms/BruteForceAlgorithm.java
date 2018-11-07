@@ -9,6 +9,7 @@ import oeg.lstbs.metrics.ComparisonMetric;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
@@ -16,7 +17,9 @@ import org.apache.lucene.util.BytesRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -55,7 +58,7 @@ public class BruteForceAlgorithm implements Explorer {
     }
 
     @Override
-    public List<Similarity> findDuplicates(ComparisonMetric metric, int maxResults) {
+    public List<Similarity> findDuplicates(ComparisonMetric metric, int maxResults, int level, AtomicInteger counter) {
 
 
         MinMaxPriorityQueue<Similarity> pairs = MinMaxPriorityQueue.orderedBy(new Similarity.ScoreComparator()).maximumSize(maxResults).create();
@@ -72,9 +75,31 @@ public class BruteForceAlgorithm implements Explorer {
 
             Document d1 = new Document(id,vector);
 
-            for(Similarity sim: findSimilarTo(d1, scoreDoc.doc, metric, maxResults)){
-                pairs.add(sim);
+
+            IndexReader indexReader = this.repository.getReader();
+
+            for(int i=0; i < scoreDoc.doc; i++){
+
+                try {
+                    org.apache.lucene.document.Document doc2 = indexReader.document(i);
+                    String id2 = String.format(doc2.get("name"));
+
+                    BytesRef byteRef2 = doc2.getBinaryValue("vector");
+                    List<Double> vector2 = (List<Double>) SerializationUtils.deserialize(byteRef2.bytes);
+
+                    Document d2 = new Document(id2,vector2);
+                    pairs.add(new Similarity(metric.similarity(vector, vector2),d1,d2));
+                    counter.incrementAndGet();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
             }
+
+//
+//            for(Similarity sim: findSimilarTo(d1, scoreDoc.doc, metric, maxResults, counter)){
+//                pairs.add(sim);
+//            }
         }
 
         return pairs.stream().sorted((a,b) -> -a.getScore().compareTo(b.getScore())).collect(Collectors.toList());
