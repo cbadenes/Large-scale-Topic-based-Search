@@ -19,7 +19,7 @@ public class ThresholdBasedAlgorithm extends GroupsBasedAlgorithm {
 
 
     public ThresholdBasedAlgorithm() {
-        super("threshold-based",2);
+        super("threshold-based",2,1);
     }
 
     @Override

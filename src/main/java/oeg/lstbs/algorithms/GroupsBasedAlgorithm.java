@@ -2,6 +2,7 @@ package oeg.lstbs.algorithms;
 
 import com.google.common.collect.MinMaxPriorityQueue;
 import oeg.lstbs.data.*;
+import oeg.lstbs.io.ParallelExecutor;
 import oeg.lstbs.io.SerializationUtils;
 import oeg.lstbs.metrics.ComparisonMetric;
 import org.apache.lucene.document.Field;
@@ -12,6 +13,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.misc.HighFreqTerms;
 import org.apache.lucene.misc.TermStats;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
@@ -22,6 +24,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -35,10 +39,12 @@ public abstract class GroupsBasedAlgorithm implements Explorer {
 
     protected final LuceneRepository repository;
     private final int maxGroups;
+    private int level;
 
-    public GroupsBasedAlgorithm(String id, int maxGroups) {
+    public GroupsBasedAlgorithm(String id, int maxGroups, int level) {
         this.repository = new LuceneRepository(id);
         this.maxGroups = maxGroups;
+        this.level = level;
     }
 
     public abstract List<TopicPoint> getGroups(List<Double> vector);
@@ -87,60 +93,74 @@ public abstract class GroupsBasedAlgorithm implements Explorer {
     }
 
     @Override
-    public List<Similarity> findDuplicates(ComparisonMetric metric, int maxResults, int level, AtomicInteger counter) {
+    public List<Similarity> findDuplicates(ComparisonMetric metric, AtomicInteger counter) {
 
-        List<Similarity> duplicates = getDuplicatesByField("hashcodeR"+level, metric, maxResults, counter);
-        return duplicates;
-    }
-
-    private List<Similarity> getDuplicatesByField(String fieldName, ComparisonMetric metric, int maxResults, AtomicInteger counter) {
-        MinMaxPriorityQueue<Similarity> pairs = MinMaxPriorityQueue.orderedBy(new Similarity.ScoreComparator()).maximumSize(maxResults).create();
-        IndexReader reader = repository.getReader();
+        final String fieldName = "hashcodeR"+level;
+        ConcurrentLinkedDeque<Similarity> pairs = new ConcurrentLinkedDeque<>();
         TermStats[] commonTerms;
         try {
+            IndexReader reader = repository.getReader();
+            final int maxQuery = reader.numDocs();
             HighFreqTerms.DocFreqComparator cmp = new HighFreqTerms.DocFreqComparator();
             commonTerms = HighFreqTerms.getHighFreqTerms(reader, 100, fieldName, cmp);
+            ParallelExecutor executor = new ParallelExecutor();
+
             for (TermStats commonTerm : commonTerms) {
 
                 if (commonTerm.docFreq < 2) break;
 
-                String val = commonTerm.termtext.utf8ToString();
+                final String val = commonTerm.termtext.utf8ToString();
 
-                List<Document> docs = new ArrayList<>();
+                executor.submit(() -> {
+                    try{
 
-                TermQuery query = new TermQuery(new Term(fieldName, val));
-                TopDocs results = repository.getBy(query, repository.getSize());
+                        IndexSearcher searcher = new IndexSearcher(reader);
+                        List<Document> docs = new ArrayList<>();
 
+                        TermQuery query = new TermQuery(new Term(fieldName, val));
 
-                for (ScoreDoc scoreDoc : results.scoreDocs) {
-                    org.apache.lucene.document.Document doc = repository.getDocument(scoreDoc.doc);
+                        TopDocs results = searcher.search(query, maxQuery);
 
-                    String id = String.format(doc.get("name"));
+                        for (ScoreDoc scoreDoc : results.scoreDocs) {
+                            org.apache.lucene.document.Document doc = reader.document(scoreDoc.doc);
 
-                    BytesRef byteRef = doc.getBinaryValue("vector");
-                    List<Double> vector = (List<Double>) SerializationUtils.deserialize(byteRef.bytes);
+                            String id = String.format(doc.get("name"));
 
-                    Document d1 = new Document(id, vector);
+                            BytesRef byteRef = doc.getBinaryValue("vector");
+                            List<Double> vector = (List<Double>) SerializationUtils.deserialize(byteRef.bytes);
 
-                    for (Document d2 : docs) {
-                        counter.incrementAndGet();
-                        pairs.add(new Similarity(metric.similarity(d1.getVector(), d2.getVector()), d1, d2));
+                            Document d1 = new Document(id, vector);
+
+                            for (Document d2 : docs) {
+                                counter.incrementAndGet();
+                                pairs.add(new Similarity(metric.similarity(d1.getVector(), d2.getVector()), d1, d2));
+                            }
+
+                            docs.add(d1);
+                        }
+                    }catch (Exception e){
+                        LOG.error("Unexpected error",e);
                     }
-
-                    docs.add(d1);
-                }
-
+                });
 
             }
+            executor.awaitTermination(1, TimeUnit.HOURS);
+            reader.close();
             return pairs.stream().sorted((a, b) -> -a.getScore().compareTo(b.getScore())).collect(Collectors.toList());
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+
+    }
+
+    public void setLevel(int level){
+        this.level = level;
     }
 
     @Override
-    public List<Similarity> findSimilarTo(Document query, ComparisonMetric metric, int maxResults) {
+    public List<Similarity> findSimilarTo(Document query, ComparisonMetric metric, int maxResults, AtomicInteger counter) {
         return null;
     }
 

@@ -1,8 +1,10 @@
 package oeg.lstbs.data;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
@@ -23,9 +25,21 @@ public class Evaluation {
 
     private double recall       = 0.0;
 
-    private double improvement  = 0.0;
+    private double efficiency  = 0.0;
 
     private String description  = "";
+
+    private List<String> totalHits    = new ArrayList<>();
+
+    private double averagePrecision = 0.0;
+
+    public double getAveragePrecision() {
+        return averagePrecision;
+    }
+
+    public void setAveragePrecision(double averagePrecision) {
+        this.averagePrecision = averagePrecision;
+    }
 
     public String getDescription() {
         return description;
@@ -43,14 +57,16 @@ public class Evaluation {
 
         falseNegative   += reference.stream().filter( e -> !value.contains(e)).count();
 
+        totalHits.add(value.size()+"/"+reference.size());
+
     }
 
-    public double getImprovement() {
-        return improvement;
+    public double getEfficiency() {
+        return efficiency;
     }
 
-    public void setImprovement(double improvement) {
-        this.improvement = improvement;
+    public void setEfficiency(double efficiency) {
+        this.efficiency = efficiency;
     }
 
     public Instant getStart() {
@@ -108,17 +124,23 @@ public class Evaluation {
         return 2 * (precision*recall) / (precision+recall);
     }
 
+    public String getTotalHits() {
+        return totalHits.stream().collect(Collectors.joining("_"));
+    }
+
     @Override
     public String toString() {
         return "Evaluation{" +
                 "description="     + description +
-                "truePositive="     + truePositive +
+                ", truePositive="     + truePositive +
                 ", falsePositive="  + falsePositive +
                 ", falseNegative="  + falseNegative +
                 ", precision="      + getPrecision()+
                 ", recall="         + getRecall() +
                 ", fMeasure="       + getFMeasure() +
-                ", improvement="       + getImprovement() +
+                ", averagePrecision="     + averagePrecision+
+                ", efficiency="       + getEfficiency() +
+                ", total-hits="       + getTotalHits() +
                 ", elapsedTime="       + ((start!= null && end!=null)?  Time.print(start,end,"") : "")+
                 '}';
     }

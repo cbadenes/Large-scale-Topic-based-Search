@@ -75,13 +75,7 @@ public class LuceneRepository {
 
     public org.apache.lucene.document.Document getDocument(int docId){
         try {
-            if (reader == null) {
-                writer.commit();
-                writer.close();
-                reader = DirectoryReader.open(directory);
-                searcher  = new IndexSearcher(reader);
-            }
-
+            close();
             return reader.document(docId);
 
         } catch (IOException e) {
@@ -91,13 +85,7 @@ public class LuceneRepository {
 
     public TopDocs getBy(Query query, int max){
         try {
-            if (reader == null) {
-                writer.commit();
-                writer.close();
-                reader = DirectoryReader.open(directory);
-                searcher  = new IndexSearcher(reader);
-            }
-
+            close();
             return searcher.search(query, (max<0? reader.numDocs() : max));
 
         } catch (IOException e) {
@@ -105,16 +93,19 @@ public class LuceneRepository {
         }
     }
 
+    private void close() throws IOException {
+        if (writer.isOpen()) {
+            writer.commit();
+            writer.close();
+            reader = DirectoryReader.open(directory);
+            searcher  = new IndexSearcher(reader);
+        }
+    }
+
     public DirectoryReader getReader(){
         try {
-            if (reader == null) {
-                writer.commit();
-                writer.close();
-                reader = DirectoryReader.open(directory);
-                searcher  = new IndexSearcher(reader);
-            }
-
-            return reader;
+            close();
+            return DirectoryReader.open(directory);
 
         } catch (IOException e) {
             throw new RuntimeException("Unexpected error",e);

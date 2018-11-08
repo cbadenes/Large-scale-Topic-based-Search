@@ -19,17 +19,18 @@ public interface Explorer {
     /**
      * Results measured in terms of precision, recall, map and time
      * @param metric similarity metric
-     * @param maxResults maximum number of documents to be returned
+     * @param counter monitor number of comparisons required to perform it
      * @return documents with the highest similarity value in the corpus
      */
-    List<Similarity> findDuplicates(ComparisonMetric metric, int maxResults, int level, AtomicInteger counter);
+    List<Similarity> findDuplicates(ComparisonMetric metric, AtomicInteger counter);
 
     /**
      * Results measured in terms of precision, recall, map and time
      * @param query reference document for the search
      * @param metric
      * @param maxResults maximum number of documents to be returned
+     * @param counter monitor number of comparisons required to perform it
      * @return
      */
-    List<Similarity> findSimilarTo(Document query, ComparisonMetric metric, int maxResults);
+    List<Similarity> findSimilarTo(Document query, ComparisonMetric metric, int maxResults, AtomicInteger counter);
 }
