@@ -49,24 +49,24 @@ public class DuplicatesExperiment {
 
         this.metrics        = Arrays.asList(new JSD(), new S2JSD(), new Hellinger());
         this.accuracies     = Arrays.asList(5,10,20);
-        this.sampleSize     = 1000; //1000
-        this.iterations     = 2; //10
+        this.sampleSize     = 1000;
+        this.iterations     = 100;
         this.threshold      = 0.95;
 
 
         // Cordis
         corpora.put("Cordis100","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/ZG7TtJmbmRi9LDe/download");
-//        corpora.put("Cordis300","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/Ac5irmmxSkdgyGw/download");
-        //        corpora.put("Cordis500","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/tfQFqAYL9XS5NB6/download");
-        //        corpora.put("Cordis800","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/KEE3fyFkM7Wq6Zq/download");
-        //        corpora.put("Cordis1000","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/87ega8bYMZH8T62/download");
+        corpora.put("Cordis300","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/Ac5irmmxSkdgyGw/download");
+        corpora.put("Cordis500","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/tfQFqAYL9XS5NB6/download");
+        corpora.put("Cordis800","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/KEE3fyFkM7Wq6Zq/download");
+        corpora.put("Cordis1000","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/87ega8bYMZH8T62/download");
 
         // OpenResearchCorpus
         corpora.put("OpenResearch100","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download");
-//        corpora.put("OpenResearch300","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download");
-//        corpora.put("OpenResearch500","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download");
-//        corpora.put("OpenResearch800","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/d94eCryDqbZtMd4/download");
-//        corpora.put("OpenResearch10000","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zSgR5H4CsPnPmHG/download");
+        corpora.put("OpenResearch300","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download");
+        corpora.put("OpenResearch500","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download");
+        corpora.put("OpenResearch800","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/d94eCryDqbZtMd4/download");
+        corpora.put("OpenResearch10000","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zSgR5H4CsPnPmHG/download");
 
         // Wikipedia
 //        corpora.put("Wikipedia100","");
