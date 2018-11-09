@@ -135,7 +135,7 @@ public class SearchingExperiment {
                     }
                 });
 
-                if (counter.incrementAndGet() % (trainingSize >10? trainingSize /10 : trainingSize) == 0) LOG.info("Added " + counter.get() + " documents");
+                if (counter.incrementAndGet() % (trainingSize >10 || trainingSize < 0? trainingSize /10 : trainingSize) == 0) LOG.info("Added " + counter.get() + " documents");
                 if ((testSet.size() < testingSize) && (counter.get() % (random.nextInt(testingSize)+1) == 0)) {
                     testSet.add(d1);
                 }
