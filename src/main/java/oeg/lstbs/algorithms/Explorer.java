@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public interface Explorer {
 
+    String id();
+
     boolean add(Document document);
 
     boolean commit();

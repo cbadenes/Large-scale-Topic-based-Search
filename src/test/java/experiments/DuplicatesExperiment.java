@@ -147,9 +147,9 @@ public class DuplicatesExperiment {
 
                     for(ComparisonMetric metric: metrics){
 
-                        String algorithmId = "";
+                        String algorithmId;
 
-                        LOG.info("Finding duplicates .. ");
+                        LOG.info("Finding duplicates by using '"+metric.id()+"' as similarity metric.. ");
                         // -> Brute Force Approach
                         AtomicInteger maxCounter = new AtomicInteger();
                         List<Similarity> bruteForceDuplicates = bruteForceAlgorithm.findDuplicates(metric, maxCounter);
@@ -180,6 +180,7 @@ public class DuplicatesExperiment {
                             double averagePrecision = AveragePrecision.from(groundTruth, densityRetrievedList);
                             double improvement = 1 - (Double.valueOf(densityCounter.get()) / Double.valueOf(maxCounter.get()));
 
+                            // mean Average Precision
                             Evaluation eval = new Evaluation();
                             eval.setDescription("iteration"+i);
                             eval.setStart(start);
@@ -191,15 +192,13 @@ public class DuplicatesExperiment {
                             if (!results.containsKey(algorithmId)) results.put(algorithmId, new ArrayList<>());
                             results.get(algorithmId).add(eval);
 
-
-//                            LOG.info("Evaluation "+ algorithmId + " -> " + eval2);
-
+                            // Precision@n and Recall@n
                             for(Integer n: accuracies.stream().sorted().collect(Collectors.toList())){
                                 Evaluation eval2 = new Evaluation();
                                 eval2.setDescription("iteration"+i);
                                 eval2.setStart(start);
                                 eval2.setEnd(end);
-                                eval2.addResult(groundTruth, densityRetrievedList.stream().limit(n).collect(Collectors.toList()));
+                                eval2.addResult(groundTruth.stream().limit(n).collect(Collectors.toList()), densityRetrievedList.stream().limit(n).collect(Collectors.toList()));
                                 eval2.setEfficiency(improvement);
                                 algorithmId = "density"+level+"@"+n+"("+metric.id()+")";
                                 if (!results.containsKey(algorithmId)) results.put(algorithmId, new ArrayList<>());
@@ -223,8 +222,7 @@ public class DuplicatesExperiment {
                             double averagePrecision = AveragePrecision.from(groundTruth, centroidRetrievedList);
                             double improvement = 1 - (Double.valueOf(centroidCounter.get()) / Double.valueOf(maxCounter.get()));
 
-//                            LOG.info("Evaluation "+ algorithmId + " -> " + eval2);
-
+                            // mean Average Precision
                             Evaluation eval = new Evaluation();
                             eval.setDescription("iteration"+i);
                             eval.setStart(start);
@@ -236,12 +234,13 @@ public class DuplicatesExperiment {
                             if (!results.containsKey(algorithmId)) results.put(algorithmId, new ArrayList<>());
                             results.get(algorithmId).add(eval);
 
+                            // Precision@n and Recall@n
                             for(Integer n: accuracies.stream().sorted().collect(Collectors.toList())){
                                 Evaluation eval2 = new Evaluation();
                                 eval2.setDescription("iteration"+i);
                                 eval2.setStart(start);
                                 eval2.setEnd(end);
-                                eval2.addResult(groundTruth, centroidRetrievedList.stream().limit(n).collect(Collectors.toList()));
+                                eval2.addResult(groundTruth.stream().limit(n).collect(Collectors.toList()), centroidRetrievedList.stream().limit(n).collect(Collectors.toList()));
                                 eval2.setEfficiency(improvement);
                                 algorithmId = "centroid"+level+"@"+n+"("+metric.id()+")";
                                 if (!results.containsKey(algorithmId)) results.put(algorithmId, new ArrayList<>());

@@ -1,6 +1,7 @@
 package oeg.lstbs.data;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,6 +11,14 @@ import java.util.stream.Collectors;
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
  */
 public class Evaluation {
+
+    private String corpus;
+
+    private String model;
+
+    private String metric;
+
+    private String algorithm;
 
     private long truePositive    = 0;
 
@@ -32,6 +41,8 @@ public class Evaluation {
     private List<String> totalHits    = new ArrayList<>();
 
     private double averagePrecision = 0.0;
+
+    private Long elapsedTime;
 
     public double getAveragePrecision() {
         return averagePrecision;
@@ -128,11 +139,55 @@ public class Evaluation {
         return totalHits.stream().collect(Collectors.joining("_"));
     }
 
+    public String getCorpus() {
+        return corpus;
+    }
+
+    public void setCorpus(String corpus) {
+        this.corpus = corpus;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+
+    public String getMetric() {
+        return metric;
+    }
+
+    public void setMetric(String metric) {
+        this.metric = metric;
+    }
+
+    public String getAlgorithm() {
+        return algorithm;
+    }
+
+    public void setAlgorithm(String algorithm) {
+        this.algorithm = algorithm;
+    }
+
+    public long getElapsedTime() {
+        if ( elapsedTime != null) return elapsedTime;
+        return ChronoUnit.MILLIS.between(start, end) % 1000;
+    }
+
+    public void setElapsedTime(long elapsedTime) {
+        this.elapsedTime = elapsedTime;
+    }
+
     @Override
     public String toString() {
         return "Evaluation{" +
-                "description="     + description +
-                ", truePositive="     + truePositive +
+                "description="      + description +
+                ", algorithm="      + algorithm +
+                ", corpus="         + corpus +
+                ", model="          + model +
+                ", truePositive="   + truePositive +
                 ", falsePositive="  + falsePositive +
                 ", falseNegative="  + falseNegative +
                 ", precision="      + getPrecision()+

@@ -60,6 +60,11 @@ public class DensityBasedAlgorithm extends GroupsBasedAlgorithm {
         return groups;
     }
 
+    @Override
+    public String id() {
+        return "density";
+    }
+
 
     private class MonoDimensionalDistanceMeasure implements DistanceMeasure {
 

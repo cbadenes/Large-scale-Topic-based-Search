@@ -46,7 +46,7 @@ public class AveragePrecision {
     public static void main(String[] args) {
 
         List<String> relevant = Arrays.asList("1","2","3","4","5","6","7","8","9","0");
-        List<String> retrieve = Arrays.asList("1","aa","2","3","4","5","6","aa","7","aa","8","aa","aa","9","aa","aa","aa","aa","aa","0");
+        List<String> retrieve = Arrays.asList("1","aa","2","3","4","5","6","aa","7","aa","8","aa","aa","9","aa","aa","aa","aa","aa","0","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa","aa");
         LOG.info("average-precision: " + AveragePrecision.from(relevant,retrieve));
 
     }

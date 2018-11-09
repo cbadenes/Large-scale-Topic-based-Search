@@ -39,9 +39,19 @@ public class BruteForceAlgorithm implements Explorer {
     private final Double threshold;
 
 
+    public BruteForceAlgorithm() {
+        this.threshold = 0.9;
+        this.repository = new LuceneRepository("brute-force");
+    }
+
     public BruteForceAlgorithm(Double threshold) {
         this.threshold = threshold;
         this.repository = new LuceneRepository("brute-force");
+    }
+
+    @Override
+    public String id() {
+        return "brute-force";
     }
 
     @Override
@@ -137,7 +147,7 @@ public class BruteForceAlgorithm implements Explorer {
 
             String id = String.format(doc.get("name"));
 
-            if (id.equalsIgnoreCase(query.getId())) continue;
+//            if (id.equalsIgnoreCase(query.getId())) continue;
 
             BytesRef byteRef = doc.getBinaryValue("vector");
             List<Double> vector = (List<Double>) SerializationUtils.deserialize(byteRef.bytes);

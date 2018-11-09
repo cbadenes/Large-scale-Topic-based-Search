@@ -37,4 +37,9 @@ public class ThresholdBasedAlgorithm extends GroupsBasedAlgorithm {
         return Arrays.asList(new TopicPoint(activePointId, activeScore), new TopicPoint(inactivePointId, inactiveScore));
 
     }
+
+    @Override
+    public String id() {
+        return "threshold";
+    }
 }

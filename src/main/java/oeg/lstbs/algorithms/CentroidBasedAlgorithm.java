@@ -66,6 +66,11 @@ public class CentroidBasedAlgorithm extends GroupsBasedAlgorithm {
         }
     }
 
+    @Override
+    public String id() {
+        return "centroid";
+    }
+
 
     private class MonoDimensionalDistanceMeasure implements DistanceMeasure {
 
