@@ -11,7 +11,9 @@ import oeg.lstbs.metrics.ComparisonMetric;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
@@ -20,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
@@ -137,30 +140,42 @@ public class BruteForceAlgorithm implements Explorer {
     @Override
     public List<Similarity> findSimilarTo(Document query, ComparisonMetric metric, int maxResults, AtomicInteger counter) {
 
-        TopDocs results = this.repository.getBy(new MatchAllDocsQuery(), -1);
 
-        MinMaxPriorityQueue<Similarity> pairs = MinMaxPriorityQueue.orderedBy(new Similarity.ScoreComparator()).maximumSize(maxResults).create();
+        try{
+            DirectoryReader reader = this.repository.getReader();
 
-        for(ScoreDoc scoreDoc: results.scoreDocs){
+            IndexSearcher searcher = new IndexSearcher(reader);
+            int maxDocs = reader.numDocs();
+            TopDocs results = searcher.search(new MatchAllDocsQuery(), maxDocs);
 
-            org.apache.lucene.document.Document doc = repository.getDocument(scoreDoc.doc);
+            MinMaxPriorityQueue<Similarity> pairs = MinMaxPriorityQueue.orderedBy(new Similarity.ScoreComparator()).maximumSize(maxResults).create();
 
-            String id = String.format(doc.get("name"));
+            for(ScoreDoc scoreDoc: results.scoreDocs){
+
+                org.apache.lucene.document.Document doc = reader.document(scoreDoc.doc);
+
+                String id = String.format(doc.get("name"));
 
 //            if (id.equalsIgnoreCase(query.getId())) continue;
 
-            BytesRef byteRef = doc.getBinaryValue("vector");
-            List<Double> vector = (List<Double>) SerializationUtils.deserialize(byteRef.bytes);
+                BytesRef byteRef = doc.getBinaryValue("vector");
+                List<Double> vector = (List<Double>) SerializationUtils.deserialize(byteRef.bytes);
 
-            Document d1 = new Document(id,vector);
+                Document d1 = new Document(id,vector);
 
-            Similarity similarity = new Similarity(metric.similarity(d1.getVector(), query.getVector()), query, d1);
+                Similarity similarity = new Similarity(metric.similarity(d1.getVector(), query.getVector()), query, d1);
 
-            pairs.add(similarity);
-            counter.incrementAndGet();
+                pairs.add(similarity);
+                counter.incrementAndGet();
+            }
+
+            reader.close();
+            return pairs.stream().sorted((a,b) -> -a.getScore().compareTo(b.getScore())).collect(Collectors.toList());
+
+        }catch (Exception e){
+            LOG.error("Unexpected error",e);
+            return Collections.emptyList();
         }
-
-        return pairs.stream().sorted((a,b) -> -a.getScore().compareTo(b.getScore())).collect(Collectors.toList());
 
     }
 

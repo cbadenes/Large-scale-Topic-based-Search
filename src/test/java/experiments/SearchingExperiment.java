@@ -25,7 +25,6 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -49,12 +48,20 @@ public class SearchingExperiment {
     private BufferedWriter tableWriter;
     private BufferedWriter evalWriter;
     private ObjectMapper jsonMapper;
+    private int goldStandardTop;
+    private double goldStandardThreshold;
+    private int seed;
 
     @Before
     public void setup() throws IOException {
+
+        this.goldStandardTop        = 100;
+        this.goldStandardThreshold  = 0.0;
+
+        this.seed           = 11;
         this.metrics        = Arrays.asList(new JSD(), new S2JSD(), new Hellinger());
         this.accuracies     = Arrays.asList(0,5,10,20);
-        this.testingSize    = 1000;
+        this.testingSize    = 100;
         this.trainingSize   = -1;
         long time = System.currentTimeMillis();
         this.tableWriter    = WriterUtils.to(Paths.get("results","searching-" + time + "-tables.md.gz").toFile().getAbsolutePath());
@@ -68,7 +75,7 @@ public class SearchingExperiment {
         corpora.put("Cordis_800","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/KEE3fyFkM7Wq6Zq/download");
         corpora.put("Cordis_1000","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/87ega8bYMZH8T62/download");
 //
-        // OpenResearchCorpus
+//        // OpenResearchCorpus
         corpora.put("OpenResearch_100","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download");
         corpora.put("OpenResearch_300","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download");
         corpora.put("OpenResearch_500","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download");
@@ -103,16 +110,15 @@ public class SearchingExperiment {
         LOG.info("Searching Test ");
         Map<String, List<Evaluation>> results = new HashMap<>();
 
-        for(String corpusId: corpora.keySet().stream().sorted().collect(Collectors.toList())){
+        ConcurrentHashMap<String,Document> testSet = new ConcurrentHashMap<>();
+
+        for(String corpusId: corpora.keySet().stream().sorted((a,b) -> Integer.valueOf(StringUtils.substringAfter(a,"_")).compareTo(Integer.valueOf(StringUtils.substringAfter(b,"_")))).collect(Collectors.toList())){
 
             String corpus = corpora.get(corpusId);
 
             // Algorithms
             BruteForceAlgorithm bruteForceAlgorithm   = new BruteForceAlgorithm();
             List<GroupsBasedAlgorithm> algorithms     = Arrays.asList(new DensityBasedAlgorithm(), new CentroidBasedAlgorithm(), new ThresholdBasedAlgorithm());
-
-            Random random = new Random();
-            List<Document> testSet = new ArrayList<>();
 
             LOG.info("Creating training/test sets from corpus '"+corpusId+"' .. ");
 
@@ -135,9 +141,12 @@ public class SearchingExperiment {
                     }
                 });
 
-                if (counter.incrementAndGet() % (trainingSize >10? trainingSize /10 : (trainingSize <0)? 1000 : trainingSize) == 0) LOG.info("Added " + counter.get() + " documents");
-                if ((testSet.size() < testingSize) && (counter.get() % (random.nextInt(testingSize)+1) == 0)) {
-                    testSet.add(d1);
+                if (counter.incrementAndGet() % (trainingSize >10? trainingSize /10 : (trainingSize <0)? 1000 : trainingSize) == 0) LOG.info("Added " + counter.get() + " documents from: " + corpusId);
+                if (testSet.containsKey(d1.getId())){
+                    testSet.put(d1.getId(),d1);
+                }
+                if ((testSet.size() < testingSize) && (counter.get() % ((seed < testingSize)? seed : 2) == 0)) {
+                    testSet.put(d1.getId(),d1);
                 }
                 if ((trainingSize > 0) && (counter.get() >= trainingSize)) break;
             }
@@ -151,22 +160,22 @@ public class SearchingExperiment {
 
             Integer maxResults          = accuracies.stream().reduce((a, b) -> (a > b) ? a : b).get();
 
-            ConcurrentLinkedQueue<Evaluation> evaluations = new ConcurrentLinkedQueue();
-
             for(ComparisonMetric comparisonMetric: metrics){
+
 
                 ParallelExecutor ex2 = new ParallelExecutor();
                 ConcurrentHashMap<String,List<Evaluation>> partialEvaluations = new ConcurrentHashMap<>();
-                for(Document d : testSet){
+                AtomicInteger index = new AtomicInteger();
+                for(String dId : testSet.keySet().stream().sorted().collect(Collectors.toList())){
 
                     final ComparisonMetric metric   = comparisonMetric;
-                    final Document query            = d;
+                    final Document query            = testSet.get(dId);
                     ex2.submit(() -> {
 
-                        LOG.info("Searching related docs to '" + d.getId()+"' by brute-force by using '"+metric.id()+"' as similarity metric.. ");
+                        LOG.info("Searching related docs to '" + dId+"' ["+ index.incrementAndGet()+"/"+testingSize+"] in corpus '"+corpusId+"' by using '"+metric.id()+"' as similarity metric .. ");
                         AtomicInteger maxCounter    = new AtomicInteger();
                         Instant s1 = Instant.now();
-                        List<Similarity> relatedDocs = bruteForceAlgorithm.findSimilarTo(query, metric, maxResults, maxCounter);
+                        List<Similarity> relatedDocs = bruteForceAlgorithm.findSimilarTo(query, metric, goldStandardTop, maxCounter).stream().filter(s -> s.getScore() >= goldStandardThreshold).collect(Collectors.toList());
                         Instant e1 = Instant.now();
                         TimeUtils.print(s1,e1,"Brute-force ["+maxCounter.get()+ " comparisons] elapsed time: ");
 
@@ -205,40 +214,37 @@ public class SearchingExperiment {
 
                 for(String algorithm : partialEvaluations.keySet()){
 
+
                     List<Evaluation> testSetEvaluations = partialEvaluations.get(algorithm);
 
                     if (testSetEvaluations.isEmpty()) continue;
 
-                    Evaluation meanAverageEvaluation = new Evaluation();
-                    meanAverageEvaluation.setAveragePrecision(new Stats(testSetEvaluations.stream().filter(e -> e!=null).map(e -> e.getAveragePrecision()).collect(Collectors.toList())).getMean());
-                    meanAverageEvaluation.setPrecision(new Stats(testSetEvaluations.stream().map(e -> e.getPrecision()).collect(Collectors.toList())).getMean());
-                    meanAverageEvaluation.setRecall(new Stats(testSetEvaluations.stream().map(e -> e.getRecall()).collect(Collectors.toList())).getMean());
-                    meanAverageEvaluation.setEfficiency(new Stats(testSetEvaluations.stream().map(e -> e.getEfficiency()).collect(Collectors.toList())).getMean());
-                    meanAverageEvaluation.setAveragePrecision(new Stats(testSetEvaluations.stream().map(e -> e.getAveragePrecision()).collect(Collectors.toList())).getMean());
-                    meanAverageEvaluation.setElapsedTime(Double.valueOf(new Stats(testSetEvaluations.stream().map(e -> Double.valueOf(e.getElapsedTime())).collect(Collectors.toList())).getMean()).longValue());
-                    meanAverageEvaluation.setAlgorithm(testSetEvaluations.get(0).getAlgorithm());
-                    meanAverageEvaluation.setDescription(testSetEvaluations.get(0).getDescription());
-                    meanAverageEvaluation.setCorpus(testSetEvaluations.get(0).getCorpus());
-                    meanAverageEvaluation.setMetric(testSetEvaluations.get(0).getMetric());
-                    meanAverageEvaluation.setModel(testSetEvaluations.get(0).getModel());
-                    evaluations.add(meanAverageEvaluation);
+                    Evaluation evaluation = new Evaluation();
+                    evaluation.setAveragePrecision(new Stats(testSetEvaluations.stream().filter(e -> e!=null).map(e -> e.getAveragePrecision()).collect(Collectors.toList())).getMean());
+                    evaluation.setPrecision(new Stats(testSetEvaluations.stream().map(e -> e.getPrecision()).collect(Collectors.toList())).getMean());
+                    evaluation.setRecall(new Stats(testSetEvaluations.stream().map(e -> e.getRecall()).collect(Collectors.toList())).getMean());
+                    evaluation.setEfficiency(new Stats(testSetEvaluations.stream().map(e -> e.getEfficiency()).collect(Collectors.toList())).getMean());
+                    evaluation.setAveragePrecision(new Stats(testSetEvaluations.stream().map(e -> e.getAveragePrecision()).collect(Collectors.toList())).getMean());
+                    evaluation.setElapsedTime(Double.valueOf(new Stats(testSetEvaluations.stream().map(e -> Double.valueOf(e.getElapsedTime())).collect(Collectors.toList())).getMean()).longValue());
+                    evaluation.setAlgorithm(testSetEvaluations.get(0).getAlgorithm());
+                    evaluation.setDescription(testSetEvaluations.get(0).getDescription());
+                    evaluation.setCorpus(testSetEvaluations.get(0).getCorpus());
+                    evaluation.setMetric(testSetEvaluations.get(0).getMetric());
+                    evaluation.setModel(testSetEvaluations.get(0).getModel());
+
+                    String id = evaluation.getMetric()+"-"+evaluation.getCorpus();
+                    if (!results.containsKey(id)){
+                        results.put(id,new ArrayList<>());
+                    }
+                    results.get(id).add(evaluation);
+                    LOG.info("Report created: " + evaluation);
                 }
 
-
             }
-
-            LOG.info("Creating reports .. ");
-            for (Evaluation evaluation : evaluations){
-                String id = evaluation.getMetric()+"-"+evaluation.getCorpus();
-                if (!results.containsKey(id)){
-                    results.put(id,new ArrayList<>());
-                }
-                results.get(id).add(evaluation);
-            }
-
 
         }
 
+        LOG.info("Creating result tables ..");
 
         for(String tableName : results.keySet().stream().sorted().collect(Collectors.toList())){
             createTable(tableName+"-mAP", results.get(tableName), algorithm -> algorithm.contains("@0"), eval -> String.valueOf(eval.getAveragePrecision()));
@@ -265,8 +271,8 @@ public class SearchingExperiment {
             try {
                 Evaluation evaluation = new Evaluation();
                 List<String> relevantList = (accuracy > 0)?
-                        relatedDocs.stream().map(s -> s.getD2().getId()).limit(accuracy).collect(Collectors.toList()) :
-                        relatedDocs.stream().map(s -> s.getD2().getId()).limit(5).collect(Collectors.toList());
+                        relatedDocs.stream().map(s -> s.getD2().getId()).collect(Collectors.toList()) :
+                        relatedDocs.stream().map(s -> s.getD2().getId()).limit(5).collect(Collectors.toList()); // mAP@5
                 List<String> retrieveList = (accuracy > 0)?
                         algorithmRelatedDocs.stream().map(s -> s.getD2().getId()).limit(accuracy).collect(Collectors.toList()) :
                         algorithmRelatedDocs.stream().map(s -> s.getD2().getId()).collect(Collectors.toList());
@@ -277,8 +283,7 @@ public class SearchingExperiment {
                 evaluation.setMetric(metric.id());
                 evaluation.setAveragePrecision(AveragePrecision.from(relevantList, retrieveList));
                 evaluation.setEfficiency(1.0 - (Double.valueOf(dCounter.get()) / Double.valueOf(maxCounter.get())));
-                evaluation.setStart(dS1);
-                evaluation.setEnd(dE1);
+                evaluation.setTime(dS1,dE1);
                 evaluations.add(evaluation);
                 evalWriter.write(jsonMapper.writeValueAsString(evaluation)+"\n");
             } catch (Exception e) {
@@ -291,12 +296,10 @@ public class SearchingExperiment {
 
     private void createTable(String name, List<Evaluation> evals, Predicate<String> filter, Function<Evaluation, String> value) throws IOException {
 
-//        writer.write("#"+name);
         Map<Integer,List<String>> table = new HashMap<>();
 
         int columnId = 0;
         table.put(columnId++,Arrays.asList("topics","100","300","500","800","1000"));
-//        table.put(columnId++,Arrays.asList("topics","100"));
 
         // group by algorithm
         Map<String, List<Evaluation>> algEvals = evals.stream().collect(Collectors.groupingBy(Evaluation::getAlgorithm));

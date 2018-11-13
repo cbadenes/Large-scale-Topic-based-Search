@@ -50,7 +50,7 @@ public class LuceneRepository {
         }
     }
 
-    public void add(org.apache.lucene.document.Document doc){
+    public synchronized void add(org.apache.lucene.document.Document doc){
         try {
             writer.addDocument(doc);
             if (counter.incrementAndGet() % 100 == 0 ) {

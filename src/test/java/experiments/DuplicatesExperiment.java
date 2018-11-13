@@ -183,8 +183,7 @@ public class DuplicatesExperiment {
                             // mean Average Precision
                             Evaluation eval = new Evaluation();
                             eval.setDescription("iteration"+i);
-                            eval.setStart(start);
-                            eval.setEnd(end);
+                            eval.setTime(start,end);
                             eval.setAveragePrecision(averagePrecision);
                             eval.addResult(groundTruth, densityRetrievedList.stream().collect(Collectors.toList()));
                             eval.setEfficiency(improvement);
@@ -196,8 +195,7 @@ public class DuplicatesExperiment {
                             for(Integer n: accuracies.stream().sorted().collect(Collectors.toList())){
                                 Evaluation eval2 = new Evaluation();
                                 eval2.setDescription("iteration"+i);
-                                eval2.setStart(start);
-                                eval2.setEnd(end);
+                                eval2.setTime(start,end);
                                 eval2.addResult(groundTruth.stream().limit(n).collect(Collectors.toList()), densityRetrievedList.stream().limit(n).collect(Collectors.toList()));
                                 eval2.setEfficiency(improvement);
                                 algorithmId = "density"+level+"@"+n+"("+metric.id()+")";
@@ -225,8 +223,7 @@ public class DuplicatesExperiment {
                             // mean Average Precision
                             Evaluation eval = new Evaluation();
                             eval.setDescription("iteration"+i);
-                            eval.setStart(start);
-                            eval.setEnd(end);
+                            eval.setTime(start,end);
                             eval.addResult(groundTruth, centroidRetrievedList.stream().collect(Collectors.toList()));
                             eval.setAveragePrecision(averagePrecision);
                             eval.setEfficiency(improvement);
@@ -238,8 +235,7 @@ public class DuplicatesExperiment {
                             for(Integer n: accuracies.stream().sorted().collect(Collectors.toList())){
                                 Evaluation eval2 = new Evaluation();
                                 eval2.setDescription("iteration"+i);
-                                eval2.setStart(start);
-                                eval2.setEnd(end);
+                                eval2.setTime(start,end);
                                 eval2.addResult(groundTruth.stream().limit(n).collect(Collectors.toList()), centroidRetrievedList.stream().limit(n).collect(Collectors.toList()));
                                 eval2.setEfficiency(improvement);
                                 algorithmId = "centroid"+level+"@"+n+"("+metric.id()+")";
@@ -260,8 +256,7 @@ public class DuplicatesExperiment {
                         for(Integer n: accuracies.stream().sorted().collect(Collectors.toList())){
                             Evaluation eval2 = new Evaluation();
                             eval2.setDescription("iteration"+i);
-                            eval2.setStart(start);
-                            eval2.setEnd(end);
+                            eval2.setTime(start,end);
                             eval2.addResult(groundTruth, thresholdRetrieveList.stream().limit(n).collect(Collectors.toList()));
                             eval2.setAveragePrecision(averagePrecision);
                             eval2.setEfficiency(improvement);

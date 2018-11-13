@@ -44,6 +44,8 @@ public class Evaluation {
 
     private Long elapsedTime;
 
+    private double fMeasure = 0.0;
+
     public double getAveragePrecision() {
         return averagePrecision;
     }
@@ -84,16 +86,21 @@ public class Evaluation {
         return start;
     }
 
-    public void setStart(Instant start) {
+    public void setStart(InstantTime time){
+        this.start = Instant.ofEpochSecond(time.getEpochSecond(), time.getNano());
+    }
+
+    public void setTime(Instant start, Instant end){
         this.start = start;
+        this.end = end;
     }
 
     public Instant getEnd() {
         return end;
     }
 
-    public void setEnd(Instant end) {
-        this.end = end;
+    public void setEnd(InstantTime time){
+        this.end = Instant.ofEpochSecond(time.getEpochSecond(), time.getNano());
     }
 
     public Double getPrecision(){
@@ -129,6 +136,9 @@ public class Evaluation {
     }
 
     public Double getFMeasure(){
+
+        if (fMeasure != 0.0) return fMeasure;
+
         Double precision = getPrecision();
         Double recall = getRecall();
         if ((precision == 0) && (recall == 0)) return 0.0;
@@ -178,6 +188,10 @@ public class Evaluation {
 
     public void setElapsedTime(long elapsedTime) {
         this.elapsedTime = elapsedTime;
+    }
+
+    public void setFMeasure(double value){
+        this.fMeasure = value;
     }
 
     @Override

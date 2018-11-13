@@ -204,9 +204,11 @@ public abstract class GroupsBasedAlgorithm implements Explorer {
                 counter.incrementAndGet();
             }
 
+            reader.close();
         } catch (Exception e) {
             LOG.error("Unexpected error",e);
             return Collections.emptyList();
+        } finally {
         }
 
 
