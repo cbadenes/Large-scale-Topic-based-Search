@@ -49,8 +49,8 @@ public class DuplicatesExperiment {
 
         this.metrics        = Arrays.asList(new JSD(), new S2JSD(), new Hellinger());
         this.accuracies     = Arrays.asList(5,10,20);
-        this.sampleSize     = 10000;
-        this.iterations     = 10;
+        this.sampleSize     = 1000;
+        this.iterations     = 1;
         this.threshold      = 0.95;
 
 

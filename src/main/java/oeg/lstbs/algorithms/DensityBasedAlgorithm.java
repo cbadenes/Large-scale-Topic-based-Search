@@ -27,16 +27,18 @@ public class DensityBasedAlgorithm extends GroupsBasedAlgorithm {
     }
 
     public List<TopicPoint> getGroups(List<Double> topicDistribution) {
-        Stats stats = new Stats(topicDistribution);
+        return cluster(topicDistribution, new Stats(topicDistribution).getVariance());
+    }
+
+    public static List<TopicPoint> cluster(List<Double> vector, double eps){
         DistanceMeasure distanceMeasure = new MonoDimensionalDistanceMeasure();
-        double eps = stats.getVariance();
-//        double eps = stats.getMedian();
+
         int minPts = 0;
 
         DBSCANClusterer<TopicPoint> clusterer = new DBSCANClusterer<>(eps, minPts, distanceMeasure);
 
 
-        List<TopicPoint> points = IntStream.range(0, topicDistribution.size()).mapToObj(i -> new TopicPoint("" + i, topicDistribution.get(i))).collect(Collectors.toList());
+        List<TopicPoint> points = IntStream.range(0, vector.size()).mapToObj(i -> new TopicPoint("" + i, vector.get(i))).collect(Collectors.toList());
         List<Cluster<TopicPoint>> clusterList = clusterer.cluster(points);
 
         List<TopicPoint> groups = new ArrayList<>();
@@ -49,7 +51,7 @@ public class DensityBasedAlgorithm extends GroupsBasedAlgorithm {
 
             groups.add(new TopicPoint(label, score));
         }
-        if (totalPoints < topicDistribution.size()) {
+        if (totalPoints < vector.size()) {
             List<TopicPoint> clusterPoints = clusterList.stream().flatMap(l -> l.getPoints().stream()).collect(Collectors.toList());
             List<TopicPoint> isolatedTopics = points.stream().filter(p -> !clusterPoints.contains(p)).collect(Collectors.toList());
             Double score = (isolatedTopics.stream().map(p -> p.getScore()).reduce((x, y) -> x + y).get()) / (isolatedTopics.size());
@@ -66,7 +68,7 @@ public class DensityBasedAlgorithm extends GroupsBasedAlgorithm {
     }
 
 
-    private class MonoDimensionalDistanceMeasure implements DistanceMeasure {
+    private static class MonoDimensionalDistanceMeasure implements DistanceMeasure {
 
         @Override
         public double compute(double[] p1, double[] p2) {

@@ -93,7 +93,7 @@ public class LuceneRepository {
         }
     }
 
-    private void close() throws IOException {
+    private synchronized void close() throws IOException {
         if (writer.isOpen()) {
             writer.commit();
             writer.close();

@@ -12,6 +12,7 @@ import oeg.lstbs.metrics.Hellinger;
 import oeg.lstbs.metrics.JSD;
 import oeg.lstbs.metrics.S2JSD;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,11 +51,11 @@ public class AnalyzeCorpora {
     @Before
     public void setup() throws IOException {
 
-        this.goldStandardTop        = 100;
+        this.goldStandardTop        = 50;
         this.goldStandardThreshold  = 0.9;
 
         this.metrics        = Arrays.asList(new JSD()); //Arrays.asList(new JSD(), new S2JSD(), new Hellinger());
-        this.testingSize    = 10;
+        this.testingSize    = 100;
         this.trainingSize   = 10000;
 
         // Cordis
@@ -66,10 +67,10 @@ public class AnalyzeCorpora {
 //
 //        // OpenResearchCorpus
         corpora.put("OpenResearch_100","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download");
-        corpora.put("OpenResearch_300","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download");
-        corpora.put("OpenResearch_500","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download");
-        corpora.put("OpenResearch_800","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/d94eCryDqbZtMd4/download");
-        corpora.put("OpenResearch_1000","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zSgR5H4CsPnPmHG/download");
+//        corpora.put("OpenResearch_300","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download");
+//        corpora.put("OpenResearch_500","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download");
+//        corpora.put("OpenResearch_800","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/d94eCryDqbZtMd4/download");
+//        corpora.put("OpenResearch_1000","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zSgR5H4CsPnPmHG/download");
 
         // Wikipedia
 //        corpora.put("Wikipedia_100","");
@@ -156,7 +157,28 @@ public class AnalyzeCorpora {
                         try{
                             AtomicInteger maxCounter    = new AtomicInteger();
                             List<Similarity> relatedDocs = bruteForceAlgorithm.findSimilarTo(query, metric, goldStandardTop, maxCounter).stream().collect(Collectors.toList());
-                            String description = relatedDocs.size() + "docs["+relatedDocs.get(0).getScore()+"<->"+relatedDocs.get(relatedDocs.size()-1).getScore()+"]";
+
+                            Stats stats = new Stats(relatedDocs.stream().map(s -> s.getScore()).collect(Collectors.toList()));
+
+
+////                            List<Double> scoreList = relatedDocs.stream().skip(1).map(s -> s.getScore()).collect(Collectors.toList());
+//                            //double eps = Math.abs(stats.getMedian()-stats.getMode());
+//                            double eps = stats.getVariance();
+//
+//                            List<TopicPoint> groups = DensityBasedAlgorithm.cluster(scoreList, eps);
+//
+//                            String indexList = groups.size()>1? groups.stream().limit(groups.size() - 1).map(tp -> tp.getId()).collect(Collectors.joining("_")) : groups.get(0).getId();
+//                            String[] values = indexList.split("_");
+
+
+                            List<Similarity> finalList = relatedDocs.stream().filter(s -> s.getScore() > stats.getMean()).collect(Collectors.toList());
+//                            finalList.add(relatedDocs.get(0));
+//                            finalList.addAll(Arrays.stream(values).map(t -> Integer.valueOf(t.replace("t", ""))).map(i -> relatedDocs.get(i + 1)).collect(Collectors.toList()));
+
+
+
+
+                            String description = finalList.size() + "docs["+finalList.get(0).getScore()+"<->"+finalList.get(finalList.size()-1).getScore()+"]";
                             System.out.println("- " + query.getId() + ": " + description);
                         }catch (Exception e){
                             LOG.error("Unexpected error",e);

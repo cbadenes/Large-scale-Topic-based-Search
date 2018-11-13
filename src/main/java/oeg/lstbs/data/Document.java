@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,7 +18,11 @@ public class Document {
 
     private String id;
 
-    List<Double> vector;
+    List<Double> vector = Collections.emptyList();
+
+    public Document(String id) {
+        this.id = id;
+    }
 
     public Document(String id, List<Double> vector) {
         this.id = id;

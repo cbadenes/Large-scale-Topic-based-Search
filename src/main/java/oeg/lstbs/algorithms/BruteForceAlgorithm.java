@@ -60,15 +60,20 @@ public class BruteForceAlgorithm implements Explorer {
     @Override
     public boolean add(Document document) {
 
-        org.apache.lucene.document.Document luceneDoc = new org.apache.lucene.document.Document();
+        try{
+            org.apache.lucene.document.Document luceneDoc = new org.apache.lucene.document.Document();
+            luceneDoc.add(new TextField("name", document.getId(), Field.Store.YES));
 
-        luceneDoc.add(new TextField("name", document.getId(), Field.Store.YES));
+            BytesRef bytesRef = new BytesRef(SerializationUtils.serialize(document.getVector()));
+            luceneDoc.add(new StoredField("vector", bytesRef));
 
-        BytesRef bytesRef = new BytesRef(SerializationUtils.serialize(document.getVector()));
-        luceneDoc.add(new StoredField("vector", bytesRef));
+            this.repository.add(luceneDoc);
+            return true;
+        }catch (Exception e){
+            LOG.error("Unexpected error",e);
+            return false;
+        }
 
-        this.repository.add(luceneDoc);
-        return true;
     }
 
     @Override
@@ -82,59 +87,74 @@ public class BruteForceAlgorithm implements Explorer {
 
         ConcurrentLinkedDeque<Similarity> pairs = new ConcurrentLinkedDeque<>();
 
-        int total = this.repository.getSize();
-        TopDocs results = this.repository.getBy(new MatchAllDocsQuery(), -1);
-        ParallelExecutor executor = new ParallelExecutor();
-        for(ScoreDoc scoreDoc: results.scoreDocs){
+        try{
+            DirectoryReader reader = this.repository.getReader();
 
-            final int refId = scoreDoc.doc;
+            IndexSearcher searcher = new IndexSearcher(reader);
 
-            double ratio = (refId * 100.0) / Double.valueOf(total);
-            if (ratio % 10 == 0) LOG.info("" + ratio + "% progress");
-            executor.submit(() -> {
-                try{
-                    org.apache.lucene.document.Document doc = repository.getDocument(refId);
 
-                    String id = String.format(doc.get("name"));
+            int total = reader.numDocs();
 
-                    BytesRef byteRef = doc.getBinaryValue("vector");
-                    List<Double> vector = (List<Double>) SerializationUtils.deserialize(byteRef.bytes);
+            TopDocs results = searcher.search(new MatchAllDocsQuery(), total);
+            ParallelExecutor executor = new ParallelExecutor();
+            for(ScoreDoc scoreDoc: results.scoreDocs){
 
-                    Document d1 = new Document(id,vector);
+                final int refId = scoreDoc.doc;
 
-                    IndexReader indexReader = repository.getReader();
+                double ratio = (refId * 100.0) / Double.valueOf(total);
+                if (ratio % 10 == 0) LOG.info("" + ratio + "% progress");
+                executor.submit(() -> {
+                    try{
+                        IndexReader indexReader = repository.getReader();
 
-                    for(int i=0; i < scoreDoc.doc; i++){
+                        org.apache.lucene.document.Document doc = indexReader.document(refId);
 
-                        try {
-                            org.apache.lucene.document.Document doc2 = indexReader.document(i);
-                            String id2 = String.format(doc2.get("name"));
+                        String id = String.format(doc.get("name"));
 
-                            BytesRef byteRef2 = doc2.getBinaryValue("vector");
-                            List<Double> vector2 = (List<Double>) SerializationUtils.deserialize(byteRef2.bytes);
+                        BytesRef byteRef = doc.getBinaryValue("vector");
+                        List<Double> vector = (List<Double>) SerializationUtils.deserialize(byteRef.bytes);
 
-                            Document d2 = new Document(id2,vector2);
+                        Document d1 = new Document(id,vector);
 
-                            Double similarityScore = metric.similarity(vector, vector2);
-                            counter.incrementAndGet();
-                            if (similarityScore>=threshold){
-                                pairs.add(new Similarity(similarityScore,d1,d2));
+
+                        for(int i=0; i < scoreDoc.doc; i++){
+
+                            try {
+                                org.apache.lucene.document.Document doc2 = indexReader.document(i);
+                                String id2 = String.format(doc2.get("name"));
+
+                                BytesRef byteRef2 = doc2.getBinaryValue("vector");
+                                List<Double> vector2 = (List<Double>) SerializationUtils.deserialize(byteRef2.bytes);
+
+                                Document d2 = new Document(id2,vector2);
+
+                                Double similarityScore = metric.similarity(vector, vector2);
+                                counter.incrementAndGet();
+                                if (similarityScore>=threshold){
+                                    pairs.add(new Similarity(similarityScore,d1,d2));
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
-                        } catch (IOException e) {
-                            e.printStackTrace();
                         }
+                        indexReader.close();
+                    }catch (Exception e){
+                        LOG.error("Unexpected error",e);
                     }
-                    indexReader.close();
-                }catch (Exception e){
-                    LOG.error("Unexpected error",e);
-                }
 
-            });
+                });
+            }
+
+            executor.awaitTermination(1, TimeUnit.HOURS);
+
+            reader.close();
+
+        }catch (Exception e){
+            LOG.error("Unexpected error",e);
         }
 
-        executor.awaitTermination(1, TimeUnit.HOURS);
-
         return pairs.stream().sorted((a,b) -> -a.getScore().compareTo(b.getScore())).collect(Collectors.toList());
+
     }
 
     @Override
