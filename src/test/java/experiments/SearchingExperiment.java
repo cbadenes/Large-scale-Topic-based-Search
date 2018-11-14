@@ -49,21 +49,19 @@ public class SearchingExperiment {
     private BufferedWriter evalWriter;
     private ObjectMapper jsonMapper;
     private int goldStandardTop;
-    private double goldStandardThreshold;
     private int seed;
 
     @Before
     public void setup() throws IOException {
 
-        this.goldStandardTop        = 100;
-        this.goldStandardThreshold  = 0.0;
+        this.goldStandardTop        = 25;
 
         this.seed           = 11;
         this.metrics        = Arrays.asList(new JSD(), new S2JSD(), new Hellinger());
         this.accuracies     = Arrays.asList(0,5,10,20);
-        this.testingSize    = 100;
+        this.testingSize    = 10;
         this.trainingSize   = -1;
-        long time = System.currentTimeMillis();
+        long time           = System.currentTimeMillis();
         this.tableWriter    = WriterUtils.to(Paths.get("results","searching-" + time + "-tables.md.gz").toFile().getAbsolutePath());
         this.evalWriter     = WriterUtils.to(Paths.get("results","searching-" + time + "-evaluations.jsonl.gz").toFile().getAbsolutePath());
         this.jsonMapper     = new ObjectMapper();
@@ -76,11 +74,11 @@ public class SearchingExperiment {
         corpora.put("Cordis_1000","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/87ega8bYMZH8T62/download");
 //
 //        // OpenResearchCorpus
-        corpora.put("OpenResearch_100","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download");
-        corpora.put("OpenResearch_300","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download");
-        corpora.put("OpenResearch_500","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download");
-        corpora.put("OpenResearch_800","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/d94eCryDqbZtMd4/download");
-        corpora.put("OpenResearch_1000","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zSgR5H4CsPnPmHG/download");
+//        corpora.put("OpenResearch_100","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download");
+//        corpora.put("OpenResearch_300","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download");
+//        corpora.put("OpenResearch_500","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download");
+//        corpora.put("OpenResearch_800","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/d94eCryDqbZtMd4/download");
+//        corpora.put("OpenResearch_1000","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zSgR5H4CsPnPmHG/download");
 
         // Wikipedia
 //        corpora.put("Wikipedia_100","");
@@ -175,7 +173,7 @@ public class SearchingExperiment {
                         LOG.info("Searching related docs to '" + dId+"' ["+ index.incrementAndGet()+"/"+testingSize+"] in corpus '"+corpusId+"' by using '"+metric.id()+"' as similarity metric .. ");
                         AtomicInteger maxCounter    = new AtomicInteger();
                         Instant s1 = Instant.now();
-                        List<Similarity> relatedDocs = bruteForceAlgorithm.findSimilarTo(query, metric, goldStandardTop, maxCounter).stream().filter(s -> s.getScore() >= goldStandardThreshold).collect(Collectors.toList());
+                        List<Similarity> relatedDocs = bruteForceAlgorithm.findSimilarTo(query, metric, goldStandardTop, maxCounter).stream().collect(Collectors.toList());
                         Instant e1 = Instant.now();
                         TimeUtils.print(s1,e1,"Brute-force ["+maxCounter.get()+ " comparisons] elapsed time: ");
 
