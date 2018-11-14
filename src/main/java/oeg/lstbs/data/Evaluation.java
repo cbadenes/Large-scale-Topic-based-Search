@@ -30,9 +30,9 @@ public class Evaluation {
 
     private Instant end;
 
-    private double precision    = 0.0;
+    private Double precision;
 
-    private double recall       = 0.0;
+    private Double recall;
 
     private double efficiency  = 0.0;
 
@@ -44,7 +44,7 @@ public class Evaluation {
 
     private Long elapsedTime;
 
-    private double fMeasure = 0.0;
+    private Double fMeasure;
 
     public double getAveragePrecision() {
         return averagePrecision;
@@ -63,6 +63,12 @@ public class Evaluation {
     }
 
     public synchronized void addResult(List<String> reference, List<String> value){
+        if (reference.isEmpty()){
+            recall = 1.0;
+            if (value.isEmpty()){
+                precision = 1.0;
+            }
+        }
 
         truePositive    += value.stream().filter( e -> reference.contains(e)).count();
 
@@ -105,7 +111,7 @@ public class Evaluation {
 
     public Double getPrecision(){
 
-        if (precision != 0.0) return precision;
+        if (precision != null) return precision;
 
         double positive = (Double.valueOf(truePositive) + Double.valueOf(falsePositive));
 
@@ -126,7 +132,7 @@ public class Evaluation {
 
     public Double getRecall(){
 
-        if (precision != 0.0) return recall;
+        if (recall != null) return recall;
 
         double positive = (Double.valueOf(truePositive)+ Double.valueOf(falseNegative));
 
@@ -137,7 +143,7 @@ public class Evaluation {
 
     public Double getFMeasure(){
 
-        if (fMeasure != 0.0) return fMeasure;
+        if (fMeasure != null) return fMeasure;
 
         Double precision = getPrecision();
         Double recall = getRecall();
@@ -192,6 +198,10 @@ public class Evaluation {
 
     public void setFMeasure(double value){
         this.fMeasure = value;
+    }
+
+    public void setTotalHits(List<String> totalHits) {
+        this.totalHits = totalHits;
     }
 
     @Override
