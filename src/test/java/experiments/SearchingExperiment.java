@@ -72,27 +72,13 @@ public class SearchingExperiment {
         corpora.put("Cordis_500","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/tfQFqAYL9XS5NB6/download");
         corpora.put("Cordis_800","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/KEE3fyFkM7Wq6Zq/download");
         corpora.put("Cordis_1000","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/87ega8bYMZH8T62/download");
-//
-//        // OpenResearchCorpus
-//        corpora.put("OpenResearch_100","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download");
-//        corpora.put("OpenResearch_300","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download");
-//        corpora.put("OpenResearch_500","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download");
-//        corpora.put("OpenResearch_800","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/d94eCryDqbZtMd4/download");
-//        corpora.put("OpenResearch_1000","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zSgR5H4CsPnPmHG/download");
 
-        // Wikipedia
-//        corpora.put("Wikipedia_100","");
-        //        corpora.put("Wikipedia_300","");
-        //        corpora.put("Wikipedia_500","");
-        //        corpora.put("Wikipedia_800","");
-        //        corpora.put("Wikipedia_1000","");
-
-
-        // Patstat
-//        corpora.put("Patstat_100","");
-        //        corpora.put("Patstat_300","");
-        //        corpora.put("Patstat_500","");
-        //        corpora.put("Patstat_800","");
+        // OpenResearchCorpus
+        corpora.put("OpenResearch_100","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download");
+        corpora.put("OpenResearch_300","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download");
+        corpora.put("OpenResearch_500","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download");
+        corpora.put("OpenResearch_800","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/d94eCryDqbZtMd4/download");
+        corpora.put("OpenResearch_1000","https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zSgR5H4CsPnPmHG/download");
 
     }
 
