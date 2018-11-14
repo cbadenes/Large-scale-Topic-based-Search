@@ -182,6 +182,11 @@ public abstract class GroupsBasedAlgorithm implements Explorer {
             Query nameQuery = new QueryParser("name",new KeywordAnalyzer()).parse(document.getId());
             TopDocs result = searcher.search(nameQuery, 1);
 
+            if (result.totalHits<1){
+                LOG.error("No documents found by id '" + document.getId()+"': query -> " + nameQuery);
+                return Collections.emptyList();
+            }
+
             org.apache.lucene.document.Document d1 = reader.document(result.scoreDocs[0].doc);
             String fieldName = "hashexpR"+level;
             String topics = String.format(d1.get(fieldName));
@@ -208,9 +213,7 @@ public abstract class GroupsBasedAlgorithm implements Explorer {
         } catch (Exception e) {
             LOG.error("Unexpected error",e);
             return Collections.emptyList();
-        } finally {
         }
-
 
         return pairs.stream().sorted((a,b) -> -a.getScore().compareTo(b.getScore())).collect(Collectors.toList());
     }
