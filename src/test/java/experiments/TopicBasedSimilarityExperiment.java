@@ -29,16 +29,21 @@ public class TopicBasedSimilarityExperiment {
 
     int numPairs    = 10; // 10
 
-    ComparisonMetric metric = new KL();
+    ComparisonMetric metric = new S2JSD();
 
     Map<Integer,String> topicModels = new HashMap<>();
 
     @Before
     public void setup() {
-//        topicModels.put(10, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/inDm3rNkZABoBPS/download");
-//        topicModels.put(20, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/FBXEEfb6iQrSKFP/download");
-//        topicModels.put(30, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/ob4NBfpXiMRJKME/download");
-//        topicModels.put(40, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/gnbbFaCwHT2CxtR/download");
+        topicModels.put(10, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/inDm3rNkZABoBPS/download");
+        topicModels.put(20, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/FBXEEfb6iQrSKFP/download");
+        topicModels.put(30, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/ob4NBfpXiMRJKME/download");
+        topicModels.put(40, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/gnbbFaCwHT2CxtR/download");
+        topicModels.put(50, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/rqGWCbbKiMQKyMq/download");
+        topicModels.put(60, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/mQzaTN5ji6B8NXF/download");
+        topicModels.put(70, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/X4yKFaEnqspyFKz/download");
+        topicModels.put(80, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/eaFGSCbQtmmTf34/download");
+        topicModels.put(90, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/xHK632ddrrFmtMm/download");
         topicModels.put(100, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download");
         topicModels.put(200, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/nRWxmYH6AjHqA6N/download");
         topicModels.put(300, "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download");
