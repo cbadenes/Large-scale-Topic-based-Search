@@ -33,7 +33,7 @@ public class CentroidBasedAlgorithm extends GroupsBasedAlgorithm {
 
         DistanceMeasure distanceMeasure = new CentroidBasedAlgorithm.MonoDimensionalDistanceMeasure();
 
-        KMeansPlusPlusClusterer<TopicPoint> clusterer = new KMeansPlusPlusClusterer(5, 100, distanceMeasure);
+        KMeansPlusPlusClusterer<TopicPoint> clusterer = new KMeansPlusPlusClusterer(5, 1000, distanceMeasure);
 
         List<TopicPoint> points = IntStream.range(0, topicDistribution.size()).mapToObj(i -> new TopicPoint("" + i, topicDistribution.get(i))).collect(Collectors.toList());
         List<CentroidCluster<TopicPoint>> clusterList = clusterer.cluster(points);
