@@ -46,4 +46,10 @@ public class JSD implements ComparisonMetric {
 
     }
 
+    public static void main(String[] args) {
+        List<Double> v1 = Doubles.asList(0.4,0.3,0.3);
+        List<Double> v2 = Doubles.asList(0.3,0.3,0.4);
+        LOG.info(""+new JSD().similarity(v1,v2));
+    }
+
 }

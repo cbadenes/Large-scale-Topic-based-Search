@@ -4,7 +4,6 @@ import com.google.common.collect.MinMaxPriorityQueue;
 import oeg.lstbs.data.Document;
 import oeg.lstbs.data.LuceneRepository;
 import oeg.lstbs.data.Similarity;
-import oeg.lstbs.data.Time;
 import oeg.lstbs.io.ParallelExecutor;
 import oeg.lstbs.io.SerializationUtils;
 import oeg.lstbs.metrics.ComparisonMetric;
@@ -33,7 +32,7 @@ import java.util.stream.Collectors;
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
  */
 
-public class BruteForceAlgorithm implements Explorer {
+public class BruteForceAlgorithm implements ExplorerAlgorithm {
 
     private static final Logger LOG = LoggerFactory.getLogger(BruteForceAlgorithm.class);
 

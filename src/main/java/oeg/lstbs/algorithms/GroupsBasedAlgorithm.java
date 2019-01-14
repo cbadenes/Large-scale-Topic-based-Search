@@ -21,9 +21,7 @@ import org.apache.lucene.util.BytesRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -35,7 +33,7 @@ import java.util.stream.Collectors;
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
  */
 
-public abstract class GroupsBasedAlgorithm implements Explorer {
+public abstract class GroupsBasedAlgorithm implements ExplorerAlgorithm {
 
     private static final Logger LOG = LoggerFactory.getLogger(GroupsBasedAlgorithm.class);
 

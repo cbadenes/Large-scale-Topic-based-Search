@@ -18,7 +18,7 @@ public class WriterUtils {
         File out = new File(path);
         if (out.exists()) out.delete();
         else out.getParentFile().mkdirs();
-        return new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(path))));
+        return path.toLowerCase().contains("gzip") ? new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(path)))) : new BufferedWriter(new OutputStreamWriter(new FileOutputStream(path)));
     }
 
 }
