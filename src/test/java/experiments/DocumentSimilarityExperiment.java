@@ -27,14 +27,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
  */
 
-public class DocumentSimilarityExperiment {
+    public class DocumentSimilarityExperiment {
 
     private static final Logger LOG = LoggerFactory.getLogger(DocumentSimilarityExperiment.class);
 
 
     static final List<Dataset> DATASETS = Arrays.asList(
-            new Dataset(new Corpus("cordis-70", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/aMBsQaTM4oBi3Ga/download"), 100000, 100, 100),
-            new Dataset(new Corpus("cordis-150", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/WWHprbHxWigBMEC/download"), 100000, 100, 100),
+//            new Dataset(new Corpus("cordis-70", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/aMBsQaTM4oBi3Ga/download"), 100000, 100, 100),
+//            new Dataset(new Corpus("cordis-150", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/WWHprbHxWigBMEC/download"), 100000, 100, 100),
             new Dataset(new Corpus("openresearch-100", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download"), 1000000,100,100),
             new Dataset(new Corpus("openresearch-500", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download"), 1000000,100,100),
             new Dataset(new Corpus("patents-250", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/mG5Lwsii2CosERa/download"), 10000000,100,100),
@@ -150,6 +150,10 @@ public class DocumentSimilarityExperiment {
 
     private synchronized void updateResult(Map<String,List<Double>> results, String category, Double value){
         if (!results.containsKey(category)) results.put(category, new ArrayList<>());
+        if (value == null){
+            LOG.warn("null value in category: " + category);
+            return;
+        }
         results.get(category).add(value);
         LOG.debug(category+"@"+ N +"= " + value);
     }

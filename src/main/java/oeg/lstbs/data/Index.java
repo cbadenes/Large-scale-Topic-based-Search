@@ -20,7 +20,13 @@ public class Index {
 
         LOG.info("Creating index for " + id + " with hash algorithm: " + StringUtils.substringAfterLast(method.getClass().getCanonicalName(),"."));
         this.repository = new Repository(id);
-        VectorReader.VectorAction action = (x, vector) -> repository.add(x, method.hash(vector),vector);
+        VectorReader.VectorAction action = (x, vector) -> {
+            try {
+                repository.add(x, method.hash(vector), vector);
+            }catch (Exception e) {
+                LOG.error("Unexpected error",e);
+            }
+        };
 
         Integer interval = size >0? Double.valueOf(Math.ceil(Double.valueOf(size) / 100.0)).intValue() : 100;
         VectorReader.from(path, 0, action, interval, size);
