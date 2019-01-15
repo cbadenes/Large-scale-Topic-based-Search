@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
@@ -38,6 +39,20 @@ public class Stats {
 
 
     public Stats(List<Double> values) {
+        double[] valuesArray = Doubles.toArray(values);
+        StandardDeviation stdDev = new StandardDeviation();
+        min = Double.valueOf(StatUtils.min(valuesArray));
+        max = Double.valueOf(StatUtils.max(valuesArray));
+        dev = stdDev.evaluate(valuesArray);
+        mode = StatUtils.mode(valuesArray)[0];
+        mean = StatUtils.mean(valuesArray);
+        median = StatUtils.geometricMean(valuesArray);
+        variance = StatUtils.variance(valuesArray);
+        popVariance = StatUtils.populationVariance(valuesArray);
+        total = StatUtils.sum(valuesArray);
+    }
+
+    public Stats(Queue<Double> values) {
         double[] valuesArray = Doubles.toArray(values);
         StandardDeviation stdDev = new StandardDeviation();
         min = Double.valueOf(StatUtils.min(valuesArray));

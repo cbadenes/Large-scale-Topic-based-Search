@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
@@ -33,12 +34,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
     static final List<Dataset> DATASETS = Arrays.asList(
-//            new Dataset(new Corpus("cordis-70", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/aMBsQaTM4oBi3Ga/download"), 100000, 100, 100),
-//            new Dataset(new Corpus("cordis-150", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/WWHprbHxWigBMEC/download"), 100000, 100, 100),
-            new Dataset(new Corpus("openresearch-100", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download"), 1000000,100,100),
-            new Dataset(new Corpus("openresearch-500", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download"), 1000000,100,100),
-            new Dataset(new Corpus("patents-250", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/mG5Lwsii2CosERa/download"), 10000000,100,100),
-            new Dataset(new Corpus("patents-750", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/kTD8QEagJEyff3z/download"), 10000000,100,100)
+            new Dataset(new Corpus("cordis-70-1000", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/aMBsQaTM4oBi3Ga/download"),       100000,     100,    1000),
+            new Dataset(new Corpus("cordis-70-500", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/aMBsQaTM4oBi3Ga/download"),       100000,     100,    500)
+//            new Dataset(new Corpus("cordis-150", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/WWHprbHxWigBMEC/download"),      100000,     100,    1000),
+//            new Dataset(new Corpus("openresearch-100", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download"),1000000,    100,    10000),
+//            new Dataset(new Corpus("openresearch-500", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download"),1000000,    100,    10000),
+//            new Dataset(new Corpus("patents-250", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/mG5Lwsii2CosERa/download"),     10000000,   100,    100000),
+//            new Dataset(new Corpus("patents-750", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/kTD8QEagJEyff3z/download"),     10000000,   100,    100000)
     );
 
 
@@ -73,7 +75,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
                 // Threshold-based
                 HierarchicalHashMethod thhm                         = new ThresholdHHM(depth);
-                ConcurrentHashMap<String,List<Double>> thResults    = new ConcurrentHashMap<>();
+                ConcurrentHashMap<String,ConcurrentLinkedQueue<Double>> thResults    = new ConcurrentHashMap<>();
                 evaluateMethod(dataset, thhm, depth, thResults);
                 precisionTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(PRECISION)).getMean());
                 recallTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(RECALL)).getMean());
@@ -81,7 +83,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
                 // Centroid-based
                 HierarchicalHashMethod chhm                         = new CentroidHHM(depth,1000);
-                ConcurrentHashMap<String,List<Double>> cResults     = new ConcurrentHashMap<>();
+                ConcurrentHashMap<String,ConcurrentLinkedQueue<Double>> cResults     = new ConcurrentHashMap<>();
                 evaluateMethod(dataset, chhm, depth, cResults);
                 precisionTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(PRECISION)).getMean());
                 recallTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(RECALL)).getMean());
@@ -90,7 +92,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
                 // Density-based
                 HierarchicalHashMethod dhhm                         = new DensityHHM(depth);
-                ConcurrentHashMap<String,List<Double>> dResults     = new ConcurrentHashMap<>();
+                ConcurrentHashMap<String,ConcurrentLinkedQueue<Double>> dResults     = new ConcurrentHashMap<>();
                 evaluateMethod(dataset, dhhm, depth, dResults);
                 precisionTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(PRECISION)).getMean());
                 recallTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(RECALL)).getMean());
@@ -127,7 +129,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
     }
 
-    private void evaluateMethod(Dataset dataset, HierarchicalHashMethod method, Integer depth, Map<String,List<Double>> results){
+    private void evaluateMethod(Dataset dataset, HierarchicalHashMethod method, Integer depth, Map<String,ConcurrentLinkedQueue<Double>> results){
         LOG.info("Evaluating method " + method  + " in dataset: " + dataset + " with depth level equals to " + depth +  "...");
         String repositoryName = dataset.getCorpus().getId()+"_"+depth+"_"+ StringUtils.substringAfterLast(method.getClass().getCanonicalName(),".");
         Index index = new Index(repositoryName, dataset.getCorpus().getPath() , dataset.getIndexSize(), method);
@@ -136,7 +138,7 @@ import java.util.concurrent.ConcurrentHashMap;
     }
 
 
-    private void evaluateDocumentSimilarity(Repository repository, List<Double> vector, HierarchicalHashMethod method, Integer relevantSize, Map<String,List<Double>> results){
+    private void evaluateDocumentSimilarity(Repository repository, List<Double> vector, HierarchicalHashMethod method, Integer relevantSize, Map<String,ConcurrentLinkedQueue<Double>> results){
         Map<String,Double> simDocs = repository.getSimilarTo(vector, relevantSize);
         Map<Integer, List<String>> hash = method.hash(vector);
         Map<String,Double> relDocs = repository.getSimilarTo(hash, relevantSize);
@@ -148,8 +150,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
     }
 
-    private synchronized void updateResult(Map<String,List<Double>> results, String category, Double value){
-        if (!results.containsKey(category)) results.put(category, new ArrayList<>());
+    private synchronized void updateResult(Map<String,ConcurrentLinkedQueue<Double>> results, String category, Double value){
+        if (!results.containsKey(category)) results.put(category, new ConcurrentLinkedQueue<Double>());
         if (value == null){
             LOG.warn("null value in category: " + category);
             return;
