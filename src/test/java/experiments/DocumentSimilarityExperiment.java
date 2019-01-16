@@ -52,7 +52,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
     private static final String DENSITY_METHOD      = "density";
 
     static final Integer N                      = 5;
-    static final List<Integer> DEPTH_LEVELS     = Arrays.asList(2,3,4,5,6,7,8);
+    static final List<Integer> DEPTH_LEVELS     = Arrays.asList(2,3,4,5,6);
 
 
     @Test
