@@ -53,7 +53,7 @@ public class Stats {
     }
 
     public Stats(Queue<Double> values) {
-        double[] valuesArray = values.stream().filter(d -> d != null).mapToDouble(d -> d.doubleValue()).toArray();
+        double[] valuesArray = Doubles.toArray(values);
         StandardDeviation stdDev = new StandardDeviation();
         min = Double.valueOf(StatUtils.min(valuesArray));
         max = Double.valueOf(StatUtils.max(valuesArray));

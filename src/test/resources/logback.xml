@@ -24,6 +24,7 @@
     </appender>
 
     <logger name="oeg" level="INFO"/>
+    <logger name="experiments" level="INFO"/>
     <logger name="cc.mallet.topics" level="INFO"/>
     <logger name="cc.mallet.topics.ParallelTopicModel" level="INFO"/>
 

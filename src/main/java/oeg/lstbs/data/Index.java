@@ -18,18 +18,12 @@ public class Index {
 
     public Index(String id, String path, Integer size, HierarchicalHashMethod method) {
 
-        LOG.info("Creating index for " + id + " with hash algorithm: " + StringUtils.substringAfterLast(method.getClass().getCanonicalName(),"."));
+        LOG.info("Creating index for " + size + " documents from " + id + " with hash algorithm: " + StringUtils.substringAfterLast(method.getClass().getCanonicalName(),"."));
         this.repository = new Repository(id);
-        VectorReader.VectorAction action = (x, vector) -> {
-            try {
-                repository.add(x, method.hash(vector), vector);
-            }catch (Exception e) {
-                LOG.error("Unexpected error",e);
-            }
-        };
-
+        VectorReader.VectorAction action = (x, vector) -> repository.add(x, method.hash(vector), vector);
         Integer interval = size >0? Double.valueOf(Math.ceil(Double.valueOf(size) / 100.0)).intValue() : 100;
         VectorReader.from(path, 0, action, interval, size);
+        LOG.info(repository.getSize() + " documents indexed");
         repository.close();
 
     }
