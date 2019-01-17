@@ -25,10 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -137,7 +134,7 @@ public class Repository {
 
         IndexSearcher searcher = new IndexSearcher(reader);
 
-        Query query = getSimilarToQuery(hashcode);
+        Query query = getSimilarToQuery(hashcode).build();
 
         try {
             TopDocs topDocs = searcher.search(query,reader.numDocs());
@@ -161,7 +158,23 @@ public class Repository {
     }
 
 
-    private Query getSimilarToQuery(Map<Integer,List<String>> hashcode){
+    public Map<Integer,List<String>> getHashcodeOf(int docId, int depth){
+
+        Map<Integer,List<String>> hashcode = new HashMap<>();
+
+        Document doc = getDocument(docId);
+
+        for(int i=0;i<depth;i++){
+
+            String hash = doc.get("hash" + i);
+
+            hashcode.put(i, Arrays.asList(hash.split(" ")));
+        }
+
+        return hashcode;
+    }
+
+    public BooleanQuery.Builder getSimilarToQuery(Map<Integer,List<String>> hashcode){
         BooleanQuery.Builder booleanQuery = new BooleanQuery.Builder();
         for(Map.Entry<Integer,List<String>> entry : hashcode.entrySet()){
             Integer index = entry.getKey();
@@ -175,15 +188,27 @@ public class Repository {
                 }
             }
         }
-        return booleanQuery.build();
+        return booleanQuery;
     }
 
-    public Long getTotalHitsTo(Map<Integer,List<String>> hashcode){
+    public Double getRatioHitsTo(Map<Integer,List<String>> hashcode){
         close();
 
         try {
             IndexSearcher searcher = new IndexSearcher(reader);
-            TopDocs topDocs = searcher.search(getSimilarToQuery(hashcode), reader.numDocs());
+            TopDocs topDocs = searcher.search(getSimilarToQuery(hashcode).build(), reader.numDocs());
+            return (Double.valueOf(topDocs.totalHits) * 100.0) / Double.valueOf(reader.numDocs());
+        } catch (IOException e) {
+            LOG.error("Unexpected query error",e);
+            return 100.0;
+        }
+    }
+
+    public Long getTotalHitsTo(Query query){
+        close();
+        try {
+            IndexSearcher searcher = new IndexSearcher(reader);
+            TopDocs topDocs = searcher.search(query, reader.numDocs());
             return topDocs.totalHits;
         } catch (IOException e) {
             LOG.error("Unexpected query error",e);
