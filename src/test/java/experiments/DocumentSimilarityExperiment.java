@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
     private static final String PRECISION       = "precision";
     private static final String RECALL          = "recall";
     private static final String fMEASURE        = "fmeasure";
+    private static final String PERFORMANCE     = "performance";
 
     private static final String THRESHOLD_METHOD    = "threshold";
     private static final String CENTROID_METHOD     = "centroid";
@@ -64,12 +65,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
             ConcurrentHashMap<Integer,Map<String,Double>> precisionTable    = new ConcurrentHashMap<>();
             ConcurrentHashMap<Integer,Map<String,Double>> recallTable       = new ConcurrentHashMap<>();
             ConcurrentHashMap<Integer,Map<String,Double>> fMeasureTable     = new ConcurrentHashMap<>();
+            ConcurrentHashMap<Integer,Map<String,Double>> performanceTable  = new ConcurrentHashMap<>();
 
             for(Integer depth : DEPTH_LEVELS){
 
                 precisionTable.put(depth, new ConcurrentHashMap<String,Double>());
                 recallTable.put(depth, new ConcurrentHashMap<String,Double>());
                 fMeasureTable.put(depth, new ConcurrentHashMap<String,Double>());
+                performanceTable.put(depth, new ConcurrentHashMap<String,Double>());
 
 
                 // Threshold-based
@@ -79,6 +82,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
                 precisionTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(PRECISION)).getMean());
                 recallTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(RECALL)).getMean());
                 fMeasureTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(fMEASURE)).getMean());
+                performanceTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(PERFORMANCE)).getMean());
 
                 // Centroid-based
                 HierarchicalHashMethod chhm                         = new CentroidHHM(depth,1000);
@@ -87,6 +91,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
                 precisionTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(PRECISION)).getMean());
                 recallTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(RECALL)).getMean());
                 fMeasureTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(fMEASURE)).getMean());
+                performanceTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(PERFORMANCE)).getMean());
 
 
                 // Density-based
@@ -96,6 +101,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
                 precisionTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(PRECISION)).getMean());
                 recallTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(RECALL)).getMean());
                 fMeasureTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(fMEASURE)).getMean());
+                performanceTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(PERFORMANCE)).getMean());
 
             }
 
@@ -103,6 +109,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
             saveResults("p"+N, dataset, precisionTable);
             saveResults("r"+N, dataset, recallTable);
             saveResults("f"+N, dataset, fMeasureTable);
+            saveResults("performance", dataset, performanceTable);
 
         }
 
@@ -138,14 +145,16 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 
     private void evaluateDocumentSimilarity(Repository repository, List<Double> vector, HierarchicalHashMethod method, Integer relevantSize, Map<String,ConcurrentLinkedQueue<Double>> results){
-        Map<String,Double> simDocs = repository.getSimilarTo(vector, relevantSize);
+        Map<String,Double> simDocs      = repository.getSimilarTo(vector, relevantSize);
         Map<Integer, List<String>> hash = method.hash(vector);
-        Map<String,Double> relDocs = repository.getSimilarTo(hash, relevantSize);
+        Map<String,Double> relDocs      = repository.getSimilarTo(hash, relevantSize);
+        Long hits                       = repository.getTotalHitsTo(hash);
 
         SimilarityResult simResult = new SimilarityResult(simDocs, relDocs);
         updateResult(results, PRECISION, simResult.getPrecisionAt(N));
         updateResult(results, RECALL, simResult.getRecallAt(N));
         updateResult(results, fMEASURE, simResult.getFMeasureAt(N));
+        updateResult(results, PERFORMANCE, Double.valueOf(hits));
 
     }
 

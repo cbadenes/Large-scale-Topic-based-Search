@@ -111,7 +111,6 @@ public class Repository {
                 try {
                     Document doc = reader.document(index);
                     List<Double> v2 = (List<Double>) SerializationUtils.deserialize(doc.getBinaryValue("vector").bytes);
-//                    pairs.add(new Similarity(metric.similarity(vector,v2), new oeg.lstbs.data.Document(doc.get("id")),null));
                     add(pairs,new Similarity(metric.similarity(vector,v2), new oeg.lstbs.data.Document(doc.get("id")),null));
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -138,38 +137,13 @@ public class Repository {
 
         IndexSearcher searcher = new IndexSearcher(reader);
 
+        Query query = getSimilarToQuery(hashcode);
 
-        BooleanQuery.Builder booleanQuery = new BooleanQuery.Builder();
-        int maxClauses = 1024; // by lucene
-        int numClauses = 0;
-        for(Map.Entry<Integer,List<String>> entry : hashcode.entrySet()){
-            Integer index = entry.getKey();
-            for(String topic: entry.getValue()){
-                for(int i=index;i<hashcode.size();i++){
-//                    if (++numClauses >= maxClauses) continue;
-                    Integer boost = hashcode.size()-i;
-                    Query termQuery             = new TermQuery(new Term("hash"+i,topic));
-                    Query boostedQuery          = new BoostQuery(termQuery,boost*boost);
-                    BooleanClause booleanClause = new BooleanClause(boostedQuery, BooleanClause.Occur.SHOULD);
-                    booleanQuery.add(booleanClause);
-                }
-
-//                Query termQuery             = new TermQuery(new Term("hash"+index,topic));
-//                BooleanClause booleanClause = new BooleanClause(termQuery, BooleanClause.Occur.SHOULD);
-//                booleanQuery.add(booleanClause);
-            }
-
-
-        }
         try {
-            TopDocs topDocs = searcher.search(booleanQuery.build(),reader.numDocs());
-            double lastScore = 0.0;
+            TopDocs topDocs = searcher.search(query,reader.numDocs());
             for(int i=0;i<topDocs.totalHits;i++){
                 ScoreDoc d = topDocs.scoreDocs[i];
                 Document doc = getDocument(d.doc);
-                double score = Double.valueOf(d.score);
-//                if (lastScore == score) break;
-                lastScore = score;
                 Similarity similarity = new Similarity(Double.valueOf(d.score), new oeg.lstbs.data.Document(doc.get("id")),null);
                 pairs.add(similarity);
             }
@@ -184,6 +158,37 @@ public class Repository {
         }
 
         return documents;
+    }
+
+
+    private Query getSimilarToQuery(Map<Integer,List<String>> hashcode){
+        BooleanQuery.Builder booleanQuery = new BooleanQuery.Builder();
+        for(Map.Entry<Integer,List<String>> entry : hashcode.entrySet()){
+            Integer index = entry.getKey();
+            for(String topic: entry.getValue()){
+                for(int i=index;i<hashcode.size();i++){
+                    Integer boost = hashcode.size()-i;
+                    Query termQuery             = new TermQuery(new Term("hash"+i,topic));
+                    Query boostedQuery          = new BoostQuery(termQuery,boost*boost);
+                    BooleanClause booleanClause = new BooleanClause(boostedQuery, BooleanClause.Occur.SHOULD);
+                    booleanQuery.add(booleanClause);
+                }
+            }
+        }
+        return booleanQuery.build();
+    }
+
+    public Long getTotalHitsTo(Map<Integer,List<String>> hashcode){
+        close();
+
+        try {
+            IndexSearcher searcher = new IndexSearcher(reader);
+            TopDocs topDocs = searcher.search(getSimilarToQuery(hashcode), reader.numDocs());
+            return topDocs.totalHits;
+        } catch (IOException e) {
+            LOG.error("Unexpected query error",e);
+            return 0l;
+        }
     }
 
 
