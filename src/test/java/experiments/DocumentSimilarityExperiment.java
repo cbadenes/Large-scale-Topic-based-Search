@@ -108,6 +108,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
             ConcurrentHashMap<Integer,Map<String,Double>> precisionTable            = new ConcurrentHashMap<>();
             ConcurrentHashMap<Integer,Map<String,Double>> recallTable               = new ConcurrentHashMap<>();
             ConcurrentHashMap<Integer,Map<String,Double>> fMeasureTable             = new ConcurrentHashMap<>();
+            ConcurrentHashMap<Integer,Map<String,Double>> performanceVarianceTable  = new ConcurrentHashMap<>();
             ConcurrentHashMap<Integer,Map<String,Double>> performanceTable          = new ConcurrentHashMap<>();
 
             for(Integer depth : DEPTH_LEVELS){
@@ -116,6 +117,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
                 precisionTable.put(depth, new ConcurrentHashMap<String,Double>());
                 recallTable.put(depth, new ConcurrentHashMap<String,Double>());
                 fMeasureTable.put(depth, new ConcurrentHashMap<String,Double>());
+                performanceVarianceTable.put(depth, new ConcurrentHashMap<String,Double>());
                 performanceTable.put(depth, new ConcurrentHashMap<String,Double>());
 
 
@@ -127,6 +129,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
                 precisionTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(PRECISION)).getMean());
                 recallTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(RECALL)).getMean());
                 fMeasureTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(fMEASURE)).getMean());
+                performanceVarianceTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(PERFORMANCE)).getVariance());
                 performanceTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(PERFORMANCE)).getMean());
 
                 // Centroid-based
@@ -137,6 +140,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
                 precisionTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(PRECISION)).getMean());
                 recallTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(RECALL)).getMean());
                 fMeasureTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(fMEASURE)).getMean());
+                performanceVarianceTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(PERFORMANCE)).getVariance());
                 performanceTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(PERFORMANCE)).getMean());
 
 
@@ -148,6 +152,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
                 precisionTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(PRECISION)).getMean());
                 recallTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(RECALL)).getMean());
                 fMeasureTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(fMEASURE)).getMean());
+                performanceVarianceTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(PERFORMANCE)).getVariance());
                 performanceTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(PERFORMANCE)).getMean());
 
             }
@@ -157,6 +162,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
             saveResults("p"+N, dataset, precisionTable);
             saveResults("r"+N, dataset, recallTable);
             saveResults("f"+N, dataset, fMeasureTable);
+            saveResults("performanceVar", dataset, performanceVarianceTable);
             saveResults("performance", dataset, performanceTable);
 
         }
