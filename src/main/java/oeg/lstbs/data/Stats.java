@@ -19,7 +19,7 @@ public class Stats {
 
     private static final Logger LOG = LoggerFactory.getLogger(Stats.class);
 
-    private final Double total;
+    private Double total;
 
     private Double popVariance;
 
@@ -37,6 +37,8 @@ public class Stats {
 
     private Double variance;
 
+    public Stats() {
+    }
 
     public Stats(List<Double> values) {
         double[] valuesArray = Doubles.toArray(values);

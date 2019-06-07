@@ -44,7 +44,8 @@ public class IndexBuilder {
         LOG.info("Creating index for " + repId + " hash algorithm");
         Repository repository = new Repository(repId);
         VectorReader.VectorAction action = (id, vector) -> repository.add(id, method.hash(vector),vector);
-        VectorReader.from(CORPUS, 0, action, Double.valueOf(Math.ceil(Double.valueOf(MAX) / 100.0)).intValue(), MAX);
+        VectorReader.VectorValidation predicate = (id, vector) -> true;
+        VectorReader.from(CORPUS, 0, action, predicate,  Double.valueOf(Math.ceil(Double.valueOf(MAX) / 100.0)).intValue(), MAX);
         repository.close();
     }
 

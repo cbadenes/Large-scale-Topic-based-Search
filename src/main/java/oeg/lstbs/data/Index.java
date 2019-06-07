@@ -22,7 +22,8 @@ public class Index {
         this.repository = new Repository(id);
         VectorReader.VectorAction action = (x, vector) -> repository.add(x, method.hash(vector), vector);
         Integer interval = size >0? Double.valueOf(Math.ceil(Double.valueOf(size) / 100.0)).intValue() : 100;
-        VectorReader.from(path, 0, action, interval, size);
+        VectorReader.VectorValidation predicate = (x, vector) -> true;
+        VectorReader.from(path, 0, action, predicate,  interval, size);
         LOG.info(repository.getSize() + " documents indexed");
         repository.close();
 

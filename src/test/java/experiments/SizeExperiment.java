@@ -117,7 +117,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
         Repository repository = new Repository(repositoryName);
         LOG.info("Evaluating method " + method  + " in dataset: " + dataset + " with depth level equals to " + depth +  "...");
         VectorReader.VectorAction validateSimilarity = (docId, topicDistribution) -> evaluateDocumentSimilarity(repository, topicDistribution, method, dataset.getRelevantSize(), results);
-        VectorReader.from(dataset.getCorpus().getPath(), dataset.getIndexSize(), validateSimilarity, Double.valueOf(Math.ceil(dataset.getTestSize() / 100.0)).intValue(), dataset.getTestSize());
+        VectorReader.VectorValidation predicate = (id, td) -> true;
+        VectorReader.from(dataset.getCorpus().getPath(), dataset.getIndexSize(), validateSimilarity, predicate,  Double.valueOf(Math.ceil(dataset.getTestSize() / 100.0)).intValue(), dataset.getTestSize());
     }
 
 

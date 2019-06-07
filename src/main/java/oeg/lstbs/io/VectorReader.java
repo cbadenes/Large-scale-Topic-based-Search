@@ -18,7 +18,7 @@ public class VectorReader {
 
     private static final Logger LOG = LoggerFactory.getLogger(VectorReader.class);
 
-    public static void from(String path, Integer offset, VectorAction action, Integer ratio, Integer max){
+    public static void from(String path, Integer offset, VectorAction action, VectorValidation predicate, Integer ratio, Integer max){
         try{
             BufferedReader reader = ReaderUtils.from(path);
             String row;
@@ -30,6 +30,7 @@ public class VectorReader {
                 String[] values = row.split(",");
                 String dId = values[0];
                 List<Double> vector = Arrays.stream(values).skip(1).mapToDouble(v -> Double.valueOf(v)).boxed().collect(Collectors.toList());
+                if (!predicate.isValid(dId, vector)) continue;
                 executor.submit(() -> action.handle(dId,vector));
                 if (counter.incrementAndGet() % ratio == 0) LOG.debug(counter.get() + " vectors read" );
                 if ((max> 0) && (counter.get() >= max)) break;
@@ -45,6 +46,10 @@ public class VectorReader {
 
     public interface VectorAction {
         void handle(String id, List<Double> vector);
+    }
+
+    public interface VectorValidation {
+        boolean isValid(String id, List<Double> vector);
     }
 
 }

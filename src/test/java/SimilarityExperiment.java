@@ -8,6 +8,7 @@ import oeg.lstbs.hash.ThresholdHHM;
 import oeg.lstbs.io.ParallelExecutor;
 import oeg.lstbs.io.ReaderUtils;
 import oeg.lstbs.io.SerializationUtils;
+import oeg.lstbs.metrics.JSD;
 import org.apache.jute.Index;
 import org.apache.lucene.document.Document;
 import org.junit.Test;
@@ -126,7 +127,7 @@ public class SimilarityExperiment {
     }
 
     private void evaluate(Repository repository, List<Double> vector, HierarchicalHashMethod method){
-        Map<String,Double> simDocs = repository.getSimilarTo(vector, MAX_RELEVANT);
+        Map<String,Double> simDocs = repository.getSimilarTo(vector, MAX_RELEVANT, new JSD());
         Map<Integer, List<String>> hash = method.hash(vector);
         Map<String,Double> relDocs = repository.getSimilarTo(hash, MAX_RELEVANT*2);
 

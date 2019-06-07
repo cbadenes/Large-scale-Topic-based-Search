@@ -7,6 +7,7 @@ import oeg.lstbs.hash.HierarchicalHashMethod;
 import oeg.lstbs.hash.ThresholdHHM;
 import oeg.lstbs.io.VectorReader;
 import oeg.lstbs.io.WriterUtils;
+import oeg.lstbs.metrics.JSD;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -138,12 +139,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
         Index index = new Index(repositoryName, dataset.getCorpus().getPath() , dataset.getIndexSize(), method);
         LOG.info("Evaluating method " + method  + " in dataset: " + dataset + " with depth level equals to " + depth +  "...");
         VectorReader.VectorAction validateSimilarity = (docId, topicDistribution) -> evaluateDocumentSimilarity(index.getRepository(), topicDistribution, method, dataset.getRelevantSize(), results);
-        VectorReader.from(dataset.getCorpus().getPath(), dataset.getIndexSize(), validateSimilarity, Double.valueOf(Math.ceil(dataset.getTestSize() / 100.0)).intValue(), dataset.getTestSize());
+        VectorReader.VectorValidation predicate = (id, td) -> true;
+        VectorReader.from(dataset.getCorpus().getPath(), dataset.getIndexSize(), validateSimilarity, predicate, Double.valueOf(Math.ceil(dataset.getTestSize() / 100.0)).intValue(), dataset.getTestSize());
     }
 
 
     private void evaluateDocumentSimilarity(Repository repository, List<Double> vector, HierarchicalHashMethod method, Integer relevantSize, Map<String,ConcurrentLinkedQueue<Double>> results){
-        Map<String,Double> simDocs      = repository.getSimilarTo(vector, relevantSize);
+        Map<String,Double> simDocs      = repository.getSimilarTo(vector, relevantSize, new JSD());
         Map<Integer, List<String>> hash = method.hash(vector);
         Map<String,Double> relDocs      = repository.getSimilarTo(hash, relevantSize);
         Double hitsRatio                = repository.getRatioHitsTo(hash);

@@ -30,6 +30,11 @@ public class CentroidHHM implements HierarchicalHashMethod {
     }
 
     @Override
+    public String id() {
+        return "centroid";
+    }
+
+    @Override
     public Map<Integer, List<String>> hash(List<Double> topicDistribution) {
         Map<Integer,List<String>> hashCode = new HashMap<>();
 

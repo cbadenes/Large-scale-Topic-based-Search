@@ -28,6 +28,11 @@ public class DensityHHM implements HierarchicalHashMethod{
     }
 
     @Override
+    public String id() {
+        return "density";
+    }
+
+    @Override
     public Map<Integer, List<String>> hash(List<Double> topicDistribution) {
         DistanceMeasure distanceMeasure = new DensityHHM.MonoDimensionalDistanceMeasure();
 

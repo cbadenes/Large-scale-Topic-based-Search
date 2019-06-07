@@ -23,6 +23,11 @@ public class ThresholdHHM implements HierarchicalHashMethod {
     }
 
     @Override
+    public String id() {
+        return "threshold";
+    }
+
+    @Override
     public Map<Integer, List<String>> hash(List<Double> topicDistribution) {
         double inc = 1.0 / (Double.valueOf(topicDistribution.size())*Double.valueOf(depth+1));
         Map<Integer,List<String>> hashCode = new HashMap<>();

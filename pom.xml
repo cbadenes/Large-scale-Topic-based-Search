@@ -75,6 +75,7 @@
 	  <stanford.version>3.5.2</stanford.version><!-- 3.6.0 -->
 	  <stanford.parser.version>1.0</stanford.parser.version>
 	  <solr.version>7.4.0</solr.version>
+	  <tika.version>1.20</tika.version>
 
 	  <unirest.version>1.4.9</unirest.version>
   </properties>
@@ -160,6 +161,23 @@
 				  <groupId>org.apache.commons</groupId>
 				  <artifactId>commons-lang3</artifactId>
 				  <version>${commons-lang3.version}</version>
+			  </dependency>
+
+			  <!-- Tika libraries -->
+			  <dependency>
+				  <groupId>org.apache.tika</groupId>
+				  <artifactId>tika-core</artifactId>
+				  <version>${tika.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>org.apache.tika</groupId>
+				  <artifactId>tika-langdetect</artifactId>
+				  <version>${tika.version}</version>
+			  </dependency>
+			  <dependency>
+				  <groupId>org.apache.tika</groupId>
+				  <artifactId>tika-parsers</artifactId>
+				  <version>${tika.version}</version>
 			  </dependency>
 
 			  <!-- Solr -->
@@ -341,6 +359,20 @@
 			  <groupId>org.apache.commons</groupId>
 			  <artifactId>commons-lang3</artifactId>
 			  <version>${commons-lang3.version}</version>
+		  </dependency>
+
+		  <!-- Tika libraries -->
+		  <dependency>
+			  <groupId>org.apache.tika</groupId>
+			  <artifactId>tika-core</artifactId>
+		  </dependency>
+		  <dependency>
+			  <groupId>org.apache.tika</groupId>
+			  <artifactId>tika-langdetect</artifactId>
+		  </dependency>
+		  <dependency>
+			  <groupId>org.apache.tika</groupId>
+			  <artifactId>tika-parsers</artifactId>
 		  </dependency>
 
 		  <!-- Solr -->

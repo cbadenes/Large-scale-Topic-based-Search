@@ -8,5 +8,7 @@ import java.util.Map;
  */
 public interface HierarchicalHashMethod {
 
+    String id();
+
     Map<Integer,List<String>> hash(List<Double> topicDistribution);
 }

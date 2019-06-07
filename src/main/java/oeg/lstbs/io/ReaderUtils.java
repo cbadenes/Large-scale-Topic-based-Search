@@ -3,10 +3,7 @@ package oeg.lstbs.io;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.util.zip.GZIPInputStream;
 
@@ -21,12 +18,16 @@ public class ReaderUtils {
 
     public static BufferedReader from(String path) throws IOException {
 
+        return from(path, true);
+    }
+
+    public static BufferedReader from(String path, Boolean gzip) throws IOException {
+
         InputStreamReader inputStreamReader;
-        if (path.startsWith("http")){
-            inputStreamReader = new InputStreamReader(new GZIPInputStream(new URL(path).openStream()));
-        }else{
-            inputStreamReader = new InputStreamReader(new GZIPInputStream(new FileInputStream(path)));
-        }
+
+        InputStream inputStream = path.startsWith("http")? new URL(path).openStream() : new FileInputStream(path);
+
+        inputStreamReader = gzip? new InputStreamReader(new GZIPInputStream(inputStream)) : new InputStreamReader(inputStream);
 
         return new BufferedReader(inputStreamReader);
     }
