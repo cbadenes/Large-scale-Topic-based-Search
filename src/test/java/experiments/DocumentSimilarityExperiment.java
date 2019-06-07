@@ -34,7 +34,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
     static final List<Dataset> DATASETS = Arrays.asList(
             new Dataset(new Corpus("cordis-70", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/aMBsQaTM4oBi3Ga/download"),       100000,    100,    500),
+            new Dataset(new Corpus("cordis-100", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/ZG7TtJmbmRi9LDe/download"),       100000,    100,    500),
             new Dataset(new Corpus("cordis-150", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/WWHprbHxWigBMEC/download"),      100000,    100,    500),
+            new Dataset(new Corpus("cordis-200", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/dyCEmY8TKdSMWn6/download"),      100000,    100,    500),
+            new Dataset(new Corpus("cordis-300", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/Ac5irmmxSkdgyGw/download"),      100000,    100,    500),
+            new Dataset(new Corpus("cordis-400", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/LaMRrzcXyD2opgs/download"),      100000,    100,    500),
+            new Dataset(new Corpus("cordis-500", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/tfQFqAYL9XS5NB6/download"),      100000,    100,    500),
+            new Dataset(new Corpus("cordis-600", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/Hps7z49cYFwGo3J/download"),      100000,    100,    500),
+            new Dataset(new Corpus("cordis-700", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/ywQNySzFdrqcqQx/download"),      100000,    100,    500),
+            new Dataset(new Corpus("cordis-800", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/KEE3fyFkM7Wq6Zq/download"),      100000,    100,    500),
+            new Dataset(new Corpus("cordis-900", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/56bWjK7pk7sQcNS/download"),      100000,    100,    500),
+            new Dataset(new Corpus("cordis-1000", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/87ega8bYMZH8T62/download"),      100000,    100,    500),
             new Dataset(new Corpus("openresearch-100", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download"),500000,    100,    2500),
             new Dataset(new Corpus("openresearch-500", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download"),500000,    100,    2500),
             new Dataset(new Corpus("patents-250", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/mG5Lwsii2CosERa/download"),     1000000,   100,    5000),
