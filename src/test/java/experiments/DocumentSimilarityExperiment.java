@@ -34,8 +34,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
     static final List<Dataset> DATASETS = Arrays.asList(
             new Dataset(new Corpus("cordis-70", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/aMBsQaTM4oBi3Ga/download"),       100000,    100,    500),
-            new Dataset(new Corpus("cordis-100", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/ZG7TtJmbmRi9LDe/download"),       100000,    100,    500),
             new Dataset(new Corpus("cordis-150", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/WWHprbHxWigBMEC/download"),      100000,    100,    500),
+            new Dataset(new Corpus("openresearch-100", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-500", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download"),500000,    100,    2500),
+            new Dataset(new Corpus("patents-250", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/mG5Lwsii2CosERa/download"),     1000000,   100,    5000),
+            new Dataset(new Corpus("patents-750", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/kTD8QEagJEyff3z/download"),     1000000,   100,    5000),
+
+            new Dataset(new Corpus("cordis-100", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/ZG7TtJmbmRi9LDe/download"),       100000,    100,    500),
             new Dataset(new Corpus("cordis-200", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/dyCEmY8TKdSMWn6/download"),      100000,    100,    500),
             new Dataset(new Corpus("cordis-300", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/Ac5irmmxSkdgyGw/download"),      100000,    100,    500),
             new Dataset(new Corpus("cordis-400", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/LaMRrzcXyD2opgs/download"),      100000,    100,    500),
@@ -45,10 +50,38 @@ import java.util.concurrent.ConcurrentLinkedQueue;
             new Dataset(new Corpus("cordis-800", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/KEE3fyFkM7Wq6Zq/download"),      100000,    100,    500),
             new Dataset(new Corpus("cordis-900", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/56bWjK7pk7sQcNS/download"),      100000,    100,    500),
             new Dataset(new Corpus("cordis-1000", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/87ega8bYMZH8T62/download"),      100000,    100,    500),
-            new Dataset(new Corpus("openresearch-100", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/fd9XkHNHX5D8C3Y/download"),500000,    100,    2500),
-            new Dataset(new Corpus("openresearch-500", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/F3yKtY84LRTHxYK/download"),500000,    100,    2500),
-            new Dataset(new Corpus("patents-250", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/mG5Lwsii2CosERa/download"),     1000000,   100,    5000),
-            new Dataset(new Corpus("patents-750", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/kTD8QEagJEyff3z/download"),     1000000,   100,    5000)
+
+            new Dataset(new Corpus("openresearch-200", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/nRWxmYH6AjHqA6N/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-300", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/RWgGDE2TKZZqcJc/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-400", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/KYtEqTB8zyaKb8N/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-600", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/7wYmtWNiYnbHoZP/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-700", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/xF7K3jtnTaWFjrN/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-800", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/d94eCryDqbZtMd4/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-900", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/TQK5aHWREPSdDLQ/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-1000", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zSgR5H4CsPnPmHG/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-1100", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/MG7Zn94J4xTaRqL/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-1200", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/i8P5JKJ5RCZG3Xe/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-1300", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/SaPFLK2gb2KiCMr/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-1400", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/aaaCQpwQRKgyFQ3/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-1500", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/PCFjBFfwfzf2WM9/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-1600", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/8ifFKeypCsdttCs/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-1700", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/ntM5KzW6X9m5kcW/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-1800", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/R3aztCF49xykeLS/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-1900", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/FGBLtESCEr7SAbN/download"),500000,    100,    2500),
+            new Dataset(new Corpus("openresearch-2000", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/itkmdeESJeLQPXY/download"),500000,    100,    2500),
+
+
+            new Dataset(new Corpus("patents-100", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/XJXTfSXNeYeHioj/download"),     1000000,   100,    5000),
+            new Dataset(new Corpus("patents-200", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/NCXxPPXc2xDrDky/download"),     1000000,   100,    5000),
+            new Dataset(new Corpus("patents-300", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/idriqdGxLSoXmai/download"),     1000000,   100,    5000),
+            new Dataset(new Corpus("patents-400", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/GLFEwjDicrBt3YR/download"),     1000000,   100,    5000),
+            new Dataset(new Corpus("patents-500", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/bXwFfLQfctiDJqa/download"),     1000000,   100,    5000),
+            new Dataset(new Corpus("patents-600", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/EHXepb7H98yz6KX/download"),     1000000,   100,    5000),
+            new Dataset(new Corpus("patents-700", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/tXcndTbqGKyRRDH/download"),     1000000,   100,    5000),
+            new Dataset(new Corpus("patents-800", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/zeRFwbKpjZyT7Dg/download"),     1000000,   100,    5000),
+            new Dataset(new Corpus("patents-900", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/Nbo7NW7s8R2e5Te/download"),     1000000,   100,    5000),
+            new Dataset(new Corpus("patents-1000", "https://delicias.dia.fi.upm.es/nextcloud/index.php/s/Cxx8orc8g6Y53qR/download"),     1000000,   100,    5000)
+
     );
 
 
