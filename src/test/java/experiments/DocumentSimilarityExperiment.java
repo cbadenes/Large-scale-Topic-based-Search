@@ -61,13 +61,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
         for(Dataset dataset : DATASETS){
 
-            ConcurrentHashMap<Integer,Map<String,Double>> precisionTable    = new ConcurrentHashMap<>();
-            ConcurrentHashMap<Integer,Map<String,Double>> recallTable       = new ConcurrentHashMap<>();
-            ConcurrentHashMap<Integer,Map<String,Double>> fMeasureTable     = new ConcurrentHashMap<>();
-            ConcurrentHashMap<Integer,Map<String,Double>> performanceTable  = new ConcurrentHashMap<>();
+            ConcurrentHashMap<Integer,Map<String,Double>> precisionVarianceTable    = new ConcurrentHashMap<>();
+            ConcurrentHashMap<Integer,Map<String,Double>> precisionTable            = new ConcurrentHashMap<>();
+            ConcurrentHashMap<Integer,Map<String,Double>> recallTable               = new ConcurrentHashMap<>();
+            ConcurrentHashMap<Integer,Map<String,Double>> fMeasureTable             = new ConcurrentHashMap<>();
+            ConcurrentHashMap<Integer,Map<String,Double>> performanceTable          = new ConcurrentHashMap<>();
 
             for(Integer depth : DEPTH_LEVELS){
 
+                precisionVarianceTable.put(depth, new ConcurrentHashMap<String,Double>());
                 precisionTable.put(depth, new ConcurrentHashMap<String,Double>());
                 recallTable.put(depth, new ConcurrentHashMap<String,Double>());
                 fMeasureTable.put(depth, new ConcurrentHashMap<String,Double>());
@@ -78,6 +80,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
                 HierarchicalHashMethod thhm                         = new ThresholdHHM(depth);
                 ConcurrentHashMap<String,ConcurrentLinkedQueue<Double>> thResults    = new ConcurrentHashMap<>();
                 evaluateMethod(dataset, thhm, depth, thResults);
+                precisionVarianceTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(PRECISION)).getVariance());
                 precisionTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(PRECISION)).getMean());
                 recallTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(RECALL)).getMean());
                 fMeasureTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(fMEASURE)).getMean());
@@ -87,6 +90,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
                 HierarchicalHashMethod chhm                         = new CentroidHHM(depth,1000);
                 ConcurrentHashMap<String,ConcurrentLinkedQueue<Double>> cResults     = new ConcurrentHashMap<>();
                 evaluateMethod(dataset, chhm, depth, cResults);
+                precisionVarianceTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(PRECISION)).getVariance());
                 precisionTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(PRECISION)).getMean());
                 recallTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(RECALL)).getMean());
                 fMeasureTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(fMEASURE)).getMean());
@@ -97,6 +101,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
                 HierarchicalHashMethod dhhm                         = new DensityHHM(depth);
                 ConcurrentHashMap<String,ConcurrentLinkedQueue<Double>> dResults     = new ConcurrentHashMap<>();
                 evaluateMethod(dataset, dhhm, depth, dResults);
+                precisionVarianceTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(PRECISION)).getVariance());
                 precisionTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(PRECISION)).getMean());
                 recallTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(RECALL)).getMean());
                 fMeasureTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(fMEASURE)).getMean());
@@ -105,6 +110,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
             }
 
 
+            saveResults("vp"+N, dataset, precisionVarianceTable);
             saveResults("p"+N, dataset, precisionTable);
             saveResults("r"+N, dataset, recallTable);
             saveResults("f"+N, dataset, fMeasureTable);
