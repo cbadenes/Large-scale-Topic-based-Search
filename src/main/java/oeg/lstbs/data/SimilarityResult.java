@@ -30,11 +30,8 @@ public class SimilarityResult {
     }
 
     public Double getPrecisionAt(Integer n){
-        if (returned.isEmpty()) return 1.0;
-
         Double tp = Double.valueOf(returned.entrySet().stream().sorted((a,b) -> -a.getValue().compareTo(b.getValue())).limit(n).filter(e -> goldstandard.containsKey(e.getKey())).count());
         Double fp = n - tp;
-        if (tp == 0) return 1.0;
 
         double score = tp / (tp + fp);
         LOG.info("P@"+n+"=" + score + " / maxScore=" + maxScore + " / minScore=" + minScore);
