@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -179,10 +181,10 @@ public class Repository {
 
         MinMaxPriorityQueue<Similarity> pairs = MinMaxPriorityQueue.orderedBy(new Similarity.ScoreComparator()).maximumSize(top).create();
         close();
-        ParallelExecutor executor = new ParallelExecutor();
+//        ParallelExecutor executor = new ParallelExecutor();
         for(int i=0;i<reader.numDocs();i++){
             Integer index  = i;
-            executor.submit(() -> {
+//            executor.submit(() -> {
                 try {
                     Document doc = reader.document(index);
                     List<Double> v2 = (List<Double>) SerializationUtils.deserialize(doc.getBinaryValue("vector").bytes);
@@ -190,9 +192,9 @@ public class Repository {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            });
+//            });
         }
-        executor.awaitTermination(1l, TimeUnit.HOURS);
+//        executor.awaitTermination(1l, TimeUnit.HOURS);
 
         Map<String,Double> documents = new HashMap<>();
         while(!pairs.isEmpty()){
@@ -201,6 +203,29 @@ public class Repository {
         }
 
         return documents;
+
+    }
+
+    public Map<String,Double> getSimilarToByThreshold(List<Double> vector, Double threshold, ComparisonMetric metric){
+
+        ConcurrentHashMap<String, Double> documentMap = new ConcurrentHashMap<String, Double>();
+        close();
+        for(int i=0;i<reader.numDocs();i++){
+            Integer index  = i;
+            try {
+                Document doc = reader.document(index);
+                List<Double> v2 = (List<Double>) SerializationUtils.deserialize(doc.getBinaryValue("vector").bytes);
+                Double score = metric.similarity(vector, v2);
+                if (score > threshold){
+                    oeg.lstbs.data.Document d = new oeg.lstbs.data.Document(doc.get("id"));
+                    documentMap.put(d.getId(), score);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return documentMap;
 
     }
 

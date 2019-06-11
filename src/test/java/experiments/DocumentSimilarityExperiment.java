@@ -9,6 +9,8 @@ import oeg.lstbs.io.VectorReader;
 import oeg.lstbs.io.WriterUtils;
 import oeg.lstbs.metrics.JSD;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 /**
  * @author Badenes Olmedo, Carlos <cbadenes@fi.upm.es>
@@ -104,65 +106,41 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
         for(Dataset dataset : DATASETS){
 
-            ConcurrentHashMap<Integer,Map<String,Double>> precisionVarianceTable    = new ConcurrentHashMap<>();
-            ConcurrentHashMap<Integer,Map<String,Double>> precisionTable            = new ConcurrentHashMap<>();
-            ConcurrentHashMap<Integer,Map<String,Double>> recallTable               = new ConcurrentHashMap<>();
-            ConcurrentHashMap<Integer,Map<String,Double>> fMeasureTable             = new ConcurrentHashMap<>();
-            ConcurrentHashMap<Integer,Map<String,Double>> performanceVarianceTable  = new ConcurrentHashMap<>();
-            ConcurrentHashMap<Integer,Map<String,Double>> performanceTable          = new ConcurrentHashMap<>();
+            ConcurrentHashMap<Integer,Map<String,SummaryStatistics>> precisionTable            = new ConcurrentHashMap<>();
+            ConcurrentHashMap<Integer,Map<String,SummaryStatistics>> performanceTable          = new ConcurrentHashMap<>();
 
             for(Integer depth : DEPTH_LEVELS){
 
-                precisionVarianceTable.put(depth, new ConcurrentHashMap<String,Double>());
-                precisionTable.put(depth, new ConcurrentHashMap<String,Double>());
-                recallTable.put(depth, new ConcurrentHashMap<String,Double>());
-                fMeasureTable.put(depth, new ConcurrentHashMap<String,Double>());
-                performanceVarianceTable.put(depth, new ConcurrentHashMap<String,Double>());
-                performanceTable.put(depth, new ConcurrentHashMap<String,Double>());
+                precisionTable.put(depth, new ConcurrentHashMap<String,SummaryStatistics>());
+                performanceTable.put(depth, new ConcurrentHashMap<String,SummaryStatistics>());
 
 
                 // Threshold-based
-                HierarchicalHashMethod thhm                         = new ThresholdHHM(depth);
-                ConcurrentHashMap<String,ConcurrentLinkedQueue<Double>> thResults    = new ConcurrentHashMap<>();
+                HierarchicalHashMethod thhm                              = new ThresholdHHM(depth);
+                ConcurrentHashMap<String,SummaryStatistics> thResults    = new ConcurrentHashMap<>();
                 evaluateMethod(dataset, thhm, depth, thResults);
-                precisionVarianceTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(PRECISION)).getVariance());
-                precisionTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(PRECISION)).getMean());
-                recallTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(RECALL)).getMean());
-                fMeasureTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(fMEASURE)).getMean());
-                performanceVarianceTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(PERFORMANCE)).getVariance());
-                performanceTable.get(depth).put(THRESHOLD_METHOD, new Stats(thResults.get(PERFORMANCE)).getMean());
+                precisionTable.get(depth).put(THRESHOLD_METHOD, thResults.get(PRECISION));
+                performanceTable.get(depth).put(THRESHOLD_METHOD, thResults.get(PERFORMANCE));
 
                 // Centroid-based
-                HierarchicalHashMethod chhm                         = new CentroidHHM(depth,1000);
-                ConcurrentHashMap<String,ConcurrentLinkedQueue<Double>> cResults     = new ConcurrentHashMap<>();
+                HierarchicalHashMethod chhm                              = new CentroidHHM(depth,1000);
+                ConcurrentHashMap<String,SummaryStatistics> cResults     = new ConcurrentHashMap<>();
                 evaluateMethod(dataset, chhm, depth, cResults);
-                precisionVarianceTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(PRECISION)).getVariance());
-                precisionTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(PRECISION)).getMean());
-                recallTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(RECALL)).getMean());
-                fMeasureTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(fMEASURE)).getMean());
-                performanceVarianceTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(PERFORMANCE)).getVariance());
-                performanceTable.get(depth).put(CENTROID_METHOD, new Stats(cResults.get(PERFORMANCE)).getMean());
+                precisionTable.get(depth).put(CENTROID_METHOD, cResults.get(PRECISION));
+                performanceTable.get(depth).put(CENTROID_METHOD, cResults.get(PERFORMANCE));
 
 
                 // Density-based
-                HierarchicalHashMethod dhhm                         = new DensityHHM(depth);
-                ConcurrentHashMap<String,ConcurrentLinkedQueue<Double>> dResults     = new ConcurrentHashMap<>();
+                HierarchicalHashMethod dhhm                              = new DensityHHM(depth);
+                ConcurrentHashMap<String,SummaryStatistics> dResults     = new ConcurrentHashMap<>();
                 evaluateMethod(dataset, dhhm, depth, dResults);
-                precisionVarianceTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(PRECISION)).getVariance());
-                precisionTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(PRECISION)).getMean());
-                recallTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(RECALL)).getMean());
-                fMeasureTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(fMEASURE)).getMean());
-                performanceVarianceTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(PERFORMANCE)).getVariance());
-                performanceTable.get(depth).put(DENSITY_METHOD, new Stats(dResults.get(PERFORMANCE)).getMean());
+                precisionTable.get(depth).put(DENSITY_METHOD, dResults.get(PRECISION));
+                performanceTable.get(depth).put(DENSITY_METHOD, dResults.get(PERFORMANCE));
 
             }
 
 
-            saveResults("vp"+N, dataset, precisionVarianceTable);
             saveResults("p"+N, dataset, precisionTable);
-            saveResults("r"+N, dataset, recallTable);
-            saveResults("f"+N, dataset, fMeasureTable);
-            saveResults("performanceVar", dataset, performanceVarianceTable);
             saveResults("performance", dataset, performanceTable);
 
         }
@@ -170,7 +148,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
     }
 
 
-    private void saveResults(String id, Dataset dataset, Map<Integer,Map<String,Double>> results){
+    private void saveResults(String id, Dataset dataset, Map<Integer,Map<String,SummaryStatistics>> results){
         try {
             File output = Paths.get("results",dataset.getCorpus().getId()+"-"+id+".md").toFile();
             if (output.exists()) output.delete();
@@ -179,8 +157,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
             writer.write("########   Table: " + id + " for dataset:  " + dataset + "\n");
             writer.write("#Groups\tThresholdHHM\tCentroidHHM\tDensityHHM"+ "\n");
             for(Integer depth: DEPTH_LEVELS){
-                Map<String, Double> methodResults = results.get(depth);
-                writer.write(depth + "\t" + methodResults.get(THRESHOLD_METHOD) + "\t" + methodResults.get(CENTROID_METHOD) + "\t" + methodResults.get(DENSITY_METHOD)+ "\n");
+                Map<String, SummaryStatistics> methodResults = results.get(depth);
+                writer.write(depth + "\t" + getSummary(methodResults.get(THRESHOLD_METHOD)) + "\t" + getSummary(methodResults.get(CENTROID_METHOD)) + "\t" + getSummary(methodResults.get(DENSITY_METHOD)) + "\n");
             }
             writer.close();
         } catch (IOException e) {
@@ -189,7 +167,31 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
     }
 
-    private void evaluateMethod(Dataset dataset, HierarchicalHashMethod method, Integer depth, Map<String,ConcurrentLinkedQueue<Double>> results){
+    private String getSummary(SummaryStatistics summaryStatistics){
+        if (summaryStatistics == null) return "[]";
+        return "["+summaryStatistics.toString().replace("\n","|")+"]";
+    }
+
+    private void saveResults(String id, Dataset dataset, DescriptiveStatistics results){
+        try {
+            File output = Paths.get("results",dataset.getCorpus().getId()+"-"+id+".md").toFile();
+            if (output.exists()) output.delete();
+            output.getParentFile().mkdirs();
+            BufferedWriter writer = WriterUtils.to(output.getAbsolutePath());
+
+            writer.write(results.toString() +"\n");
+            writer.write("values: " + "\n");
+
+            String row = Arrays.stream(results.getValues()).boxed().map(d -> String.valueOf(d)).collect(Collectors.joining(" , "));
+            writer.write(row +"\n");
+            writer.close();
+        } catch (IOException e) {
+            LOG.error("Unexpected error",e);
+        }
+
+    }
+
+    private void evaluateMethod(Dataset dataset, HierarchicalHashMethod method, Integer depth, Map<String,SummaryStatistics> results){
         String repositoryName = dataset.getCorpus().getId()+"_"+depth+"_"+ StringUtils.substringAfterLast(method.getClass().getCanonicalName(),".");
         Index index = new Index(repositoryName, dataset.getCorpus().getPath() , dataset.getIndexSize(), method);
         LOG.info("Evaluating method " + method  + " in dataset: " + dataset + " with depth level equals to " + depth +  "...");
@@ -199,8 +201,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
     }
 
 
-    private void evaluateDocumentSimilarity(Repository repository, List<Double> vector, HierarchicalHashMethod method, Integer relevantSize, Map<String,ConcurrentLinkedQueue<Double>> results){
+    private void evaluateDocumentSimilarity(Repository repository, List<Double> vector, HierarchicalHashMethod method, Integer relevantSize, Map<String,SummaryStatistics> results){
         Map<String,Double> simDocs      = repository.getSimilarTo(vector, relevantSize, new JSD());
+//        Map<String,Double> simDocs      = repository.getSimilarToByThreshold(vector, 0.8, new JSD());
         Map<Integer, List<String>> hash = method.hash(vector);
         Map<String,Double> relDocs      = repository.getSimilarTo(hash, relevantSize);
         Double hitsRatio                = repository.getRatioHitsTo(hash);
@@ -213,9 +216,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
     }
 
-    private synchronized void updateResult(Map<String,ConcurrentLinkedQueue<Double>> results, String category, Double value){
-        if (!results.containsKey(category)) results.put(category, new ConcurrentLinkedQueue<Double>());
-        results.get(category).add(value);
+    private synchronized void updateResult(Map<String,SummaryStatistics> results, String category, Double value){
+        if (!results.containsKey(category)) results.put(category, new SummaryStatistics());
+        results.get(category).addValue(value);
         LOG.debug(category+"@"+ N +"= " + value);
     }
 

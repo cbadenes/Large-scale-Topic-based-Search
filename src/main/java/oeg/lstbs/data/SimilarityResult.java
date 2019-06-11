@@ -18,18 +18,28 @@ public class SimilarityResult {
     private static final Logger LOG = LoggerFactory.getLogger(SimilarityResult.class);
     private final Map<String,Double> goldstandard;
     private final Map<String,Double> returned;
+    private final Double maxScore;
+    private final Double minScore;
 
 
     public SimilarityResult(Map<String,Double> referenced, Map<String,Double> returned) {
         this.goldstandard = referenced;
+        this.maxScore = referenced.entrySet().stream().map(e -> e.getValue()).reduce((a,b) -> (a>b)? a: b).get();
+        this.minScore = referenced.entrySet().stream().map(e -> e.getValue()).reduce((a,b) -> (a<b)? a: b).get();
         this.returned   = returned;
     }
 
     public Double getPrecisionAt(Integer n){
+        if (returned.isEmpty()) return 1.0;
+
         Double tp = Double.valueOf(returned.entrySet().stream().sorted((a,b) -> -a.getValue().compareTo(b.getValue())).limit(n).filter(e -> goldstandard.containsKey(e.getKey())).count());
         Double fp = n - tp;
+        if (tp == 0) return 1.0;
 
-        return tp / (tp+fp);
+        double score = tp / (tp + fp);
+        LOG.info("P@"+n+"=" + score + " / maxScore=" + maxScore + " / minScore=" + minScore);
+
+        return score;
     }
 
     public Double getRecallAt(Integer n){
