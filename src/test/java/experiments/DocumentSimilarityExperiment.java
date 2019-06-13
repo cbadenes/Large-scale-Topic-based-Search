@@ -106,25 +106,25 @@ import java.util.stream.Collectors;
 
         for(Dataset dataset : DATASETS){
 
-            ConcurrentHashMap<Integer,Map<String,SummaryStatistics>> precisionTable            = new ConcurrentHashMap<>();
-            ConcurrentHashMap<Integer,Map<String,SummaryStatistics>> performanceTable          = new ConcurrentHashMap<>();
+            ConcurrentHashMap<Integer,Map<String,DescriptiveStatistics>> precisionTable            = new ConcurrentHashMap<>();
+            ConcurrentHashMap<Integer,Map<String,DescriptiveStatistics>> performanceTable          = new ConcurrentHashMap<>();
 
             for(Integer depth : DEPTH_LEVELS){
 
-                precisionTable.put(depth, new ConcurrentHashMap<String,SummaryStatistics>());
-                performanceTable.put(depth, new ConcurrentHashMap<String,SummaryStatistics>());
+                precisionTable.put(depth, new ConcurrentHashMap<String,DescriptiveStatistics>());
+                performanceTable.put(depth, new ConcurrentHashMap<String,DescriptiveStatistics>());
 
 
                 // Threshold-based
                 HierarchicalHashMethod thhm                              = new ThresholdHHM(depth);
-                ConcurrentHashMap<String,SummaryStatistics> thResults    = new ConcurrentHashMap<>();
+                ConcurrentHashMap<String,DescriptiveStatistics> thResults    = new ConcurrentHashMap<>();
                 evaluateMethod(dataset, thhm, depth, thResults);
                 precisionTable.get(depth).put(THRESHOLD_METHOD, thResults.get(PRECISION));
                 performanceTable.get(depth).put(THRESHOLD_METHOD, thResults.get(PERFORMANCE));
 
                 // Centroid-based
                 HierarchicalHashMethod chhm                              = new CentroidHHM(depth,1000);
-                ConcurrentHashMap<String,SummaryStatistics> cResults     = new ConcurrentHashMap<>();
+                ConcurrentHashMap<String,DescriptiveStatistics> cResults     = new ConcurrentHashMap<>();
                 evaluateMethod(dataset, chhm, depth, cResults);
                 precisionTable.get(depth).put(CENTROID_METHOD, cResults.get(PRECISION));
                 performanceTable.get(depth).put(CENTROID_METHOD, cResults.get(PERFORMANCE));
@@ -132,7 +132,7 @@ import java.util.stream.Collectors;
 
                 // Density-based
                 HierarchicalHashMethod dhhm                              = new DensityHHM(depth);
-                ConcurrentHashMap<String,SummaryStatistics> dResults     = new ConcurrentHashMap<>();
+                ConcurrentHashMap<String,DescriptiveStatistics> dResults     = new ConcurrentHashMap<>();
                 evaluateMethod(dataset, dhhm, depth, dResults);
                 precisionTable.get(depth).put(DENSITY_METHOD, dResults.get(PRECISION));
                 performanceTable.get(depth).put(DENSITY_METHOD, dResults.get(PERFORMANCE));
@@ -148,7 +148,7 @@ import java.util.stream.Collectors;
     }
 
 
-    private void saveResults(String id, Dataset dataset, Map<Integer,Map<String,SummaryStatistics>> results){
+    private void saveResults(String id, Dataset dataset, Map<Integer,Map<String,DescriptiveStatistics>> results){
         try {
             File output = Paths.get("results",dataset.getCorpus().getId()+"-"+id+".md").toFile();
             if (output.exists()) output.delete();
@@ -157,7 +157,7 @@ import java.util.stream.Collectors;
             writer.write("########   Table: " + id + " for dataset:  " + dataset + "\n");
             writer.write("#Groups\tThresholdHHM\tCentroidHHM\tDensityHHM"+ "\n");
             for(Integer depth: DEPTH_LEVELS){
-                Map<String, SummaryStatistics> methodResults = results.get(depth);
+                Map<String, DescriptiveStatistics> methodResults = results.get(depth);
                 writer.write(depth + "\t" + getSummary(methodResults.get(THRESHOLD_METHOD)) + "\t" + getSummary(methodResults.get(CENTROID_METHOD)) + "\t" + getSummary(methodResults.get(DENSITY_METHOD)) + "\n");
             }
             writer.close();
@@ -167,7 +167,7 @@ import java.util.stream.Collectors;
 
     }
 
-    private String getSummary(SummaryStatistics summaryStatistics){
+    private String getSummary(DescriptiveStatistics summaryStatistics){
         if (summaryStatistics == null) return "[]";
         return "["+summaryStatistics.toString().replace("\n","|")+"]";
     }
@@ -191,7 +191,7 @@ import java.util.stream.Collectors;
 
     }
 
-    private void evaluateMethod(Dataset dataset, HierarchicalHashMethod method, Integer depth, Map<String,SummaryStatistics> results){
+    private void evaluateMethod(Dataset dataset, HierarchicalHashMethod method, Integer depth, Map<String,DescriptiveStatistics> results){
         String repositoryName = dataset.getCorpus().getId()+"_"+depth+"_"+ StringUtils.substringAfterLast(method.getClass().getCanonicalName(),".");
         Index index = new Index(repositoryName, dataset.getCorpus().getPath() , dataset.getIndexSize(), method);
         LOG.info("Evaluating method " + method  + " in dataset: " + dataset + " with depth level equals to " + depth +  "...");
@@ -201,7 +201,7 @@ import java.util.stream.Collectors;
     }
 
 
-    private void evaluateDocumentSimilarity(Repository repository, List<Double> vector, HierarchicalHashMethod method, Integer relevantSize, Map<String,SummaryStatistics> results){
+    private void evaluateDocumentSimilarity(Repository repository, List<Double> vector, HierarchicalHashMethod method, Integer relevantSize, Map<String,DescriptiveStatistics> results){
         Map<String,Double> simDocs      = repository.getSimilarTo(vector, relevantSize, new JSD());
 //        Map<String,Double> simDocs      = repository.getSimilarToByThreshold(vector, 0.8, new JSD());
         Map<Integer, List<String>> hash = method.hash(vector);
@@ -216,8 +216,8 @@ import java.util.stream.Collectors;
 
     }
 
-    private synchronized void updateResult(Map<String,SummaryStatistics> results, String category, Double value){
-        if (!results.containsKey(category)) results.put(category, new SummaryStatistics());
+    private synchronized void updateResult(Map<String,DescriptiveStatistics> results, String category, Double value){
+        if (!results.containsKey(category)) results.put(category, new DescriptiveStatistics());
         results.get(category).addValue(value);
         LOG.debug(category+"@"+ N +"= " + value);
     }
